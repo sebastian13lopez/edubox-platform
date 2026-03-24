@@ -1,0 +1,112 @@
+<div class="max-w-[1200px] mx-auto w-full">
+  
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+    <div>
+      <h2 class="text-3xl font-extrabold text-[#111827] tracking-tight">Gestión de Docentes</h2>
+      <p class="text-slate-500 text-sm font-medium mt-1">Autoriza los accesos y monitorea a tu equipo de profesores inscritos.</p>
+    </div>
+    <div class="bg-indigo-50 text-indigo-700 text-sm font-bold px-4 py-2 rounded-xl mt-4 sm:mt-0 shadow-sm flex items-center gap-2">
+      <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+      {{ profesores.length }} Registros
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="cargando" class="flex justify-center items-center py-20">
+    <svg class="w-10 h-10 text-indigo-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+  </div>
+
+  <div *ngIf="!cargando && profesores.length > 0; else noProfesores" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+    <!-- Tabla Data Grid SaaS -->
+    <div class="overflow-x-auto custom-scrollbar">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-50 border-b border-slate-200">
+          <tr>
+            <th class="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Docente</th>
+            <th class="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Correo Electrónico</th>
+            <th class="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Modificado</th>
+            <th class="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest whitespace-nowrap text-center">Estado</th>
+            <th class="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest whitespace-nowrap text-right">Acciones de Acceso</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          
+          <tr *ngFor="let prof of profesores" class="hover:bg-slate-50/50 transition-colors group">
+            
+            <!-- Columna Nombre y Avatar -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold border border-indigo-200/50">
+                  {{ prof.nombre.charAt(0) | uppercase }}
+                </div>
+                <div>
+                  <div class="font-bold text-slate-800">{{ prof.nombre }}</div>
+                  <div class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Id: {{ prof._id.substring(prof._id.length - 6) }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Columna Correo -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                {{ prof.email }}
+              </div>
+            </td>
+
+            <!-- Columna Fecha -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">
+              {{ prof.updatedAt | date:'mediumDate' }}
+            </td>
+
+            <!-- Columna Estado Badge -->
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border shadow-sm transition-colors"
+                [ngClass]="prof.estado === 'Pendiente' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="prof.estado === 'Pendiente' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'"></span>
+                {{ prof.estado || 'Pendiente' }}
+              </span>
+            </td>
+
+            <!-- Columna Acciones -->
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <!-- Overlay si está cargando (Petición HTTP) -->
+              <div class="flex items-center justify-end gap-2" *ngIf="procesandoId !== prof._id">
+                
+                <!-- Botón Aprobar (Sólo si es pendiente) -->
+                <button *ngIf="prof.estado === 'Pendiente'" (click)="aprobarProfesor(prof._id)" class="text-emerald-600 hover:text-white bg-emerald-50 hover:bg-emerald-500 border border-emerald-200 hover:border-emerald-600 p-2 rounded-xl transition-all shadow-sm active:scale-95 tooltip" title="Autorizar e invitar al sistema">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                </button>
+
+                <!-- Botón Rechazar/Eliminar -->
+                <button (click)="rechazarProfesor(prof._id)" class="text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-500 border border-rose-200 hover:border-rose-600 p-2 rounded-xl transition-all shadow-sm active:scale-95 tooltip" [title]="prof.estado === 'Pendiente' ? 'Denegar solicitud (Eliminar)' : 'Revocar acceso (Eliminar)'">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+              
+              </div>
+
+              <!-- Spinner Cargando -->
+              <div *ngIf="procesandoId === prof._id" class="flex justify-end pr-4">
+                 <svg class="w-6 h-6 text-indigo-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <ng-template #noProfesores>
+    <div *ngIf="!cargando" class="bg-white rounded-3xl p-16 text-center border border-slate-200 shadow-sm flex flex-col items-center justify-center mt-4">
+      <div class="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-6">
+         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+      </div>
+      <h3 class="text-xl font-extrabold text-[#111827] mb-2">No se encontraron profesores</h3>
+      <p class="text-slate-500 max-w-md mx-auto text-sm font-medium leading-relaxed">Aún no se han registrado docentes en la plataforma o hubo un error al consultar el directorio de identidades.</p>
+    </div>
+  </ng-template>
+
+</div>

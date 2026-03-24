@@ -1,0 +1,155 @@
+<div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] p-4 sm:p-6 lg:p-8 overflow-hidden w-full mx-auto">
+  <div class="max-w-7xl mx-auto h-full flex flex-col">
+    
+    <!-- HEADER -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-6 gap-4" *ngIf="claseActual; else sinClaseHeader">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-50 text-[#2563EB] rounded-2xl flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold tracking-tight">{{ claseActual.nombre }}</h1>
+          <p class="text-[#6B7280] text-sm font-semibold mt-0.5 uppercase tracking-wide">{{ claseActual.profesor || 'Docente' }} <span class="text-slate-300 mx-1">•</span> {{ claseActual.tema || 'Clase en curso' }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-red-50 border border-red-100 text-[#EF4444] px-4 py-2 rounded-xl text-xs font-black tracking-widest uppercase shadow-sm">
+        <span class="w-2.5 h-2.5 bg-[#EF4444] rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
+        Conectado en Vivo
+      </div>
+    </header>
+
+    <ng-template #sinClaseHeader>
+      <header class="mb-10 text-center sm:text-left">
+        <h1 class="text-3xl font-extrabold tracking-tight">Aula en Vivo</h1>
+        <p class="text-[#6B7280] font-medium mt-1">No estás unido a ninguna clase actualmente.</p>
+      </header>
+    </ng-template>
+
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 relative" [ngClass]="{'opacity-50 pointer-events-none grayscale': !enClase}">
+      
+      <!-- MAIN: TRANSCRIPCIÓN IA (2 Columnas) -->
+      <div class="lg:col-span-2 flex flex-col gap-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[600px] overflow-hidden relative group">
+          
+          <!-- Banner Superior IA -->
+          <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#7C3AED]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+              Transcripción en Tiempo Real
+            </h2>
+            <button class="bg-white border border-slate-200 text-rose-500 rounded-xl px-3 py-1.5 text-xs font-bold hover:bg-rose-50 hover:border-rose-200 transition-colors flex items-center gap-1 shadow-sm" *ngIf="enClase" (click)="abandonarClase()">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+              Salir del aula
+            </button>
+          </div>
+
+          <!-- Browser Warning -->
+          <div class="mx-6 mt-6 p-4 bg-orange-50 border border-orange-200 rounded-2xl flex items-start gap-3 text-orange-800" *ngIf="enClase && !browserOk">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <p class="text-sm font-medium">Tu navegador no soporta reconocimiento de voz. Usa <strong>Chrome</strong> o <strong>Edge</strong> para habilitar la transcripción.</p>
+          </div>
+
+          <!-- Pizarrón Transcripción -->
+          <ng-container *ngIf="enClase && browserOk">
+            <div class="px-6 py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all" [ngClass]="{'bg-[#F5F3FF] border-[#DDD6FE] text-[#7C3AED]': isRecording, 'bg-slate-50 border-slate-200 text-slate-500': !isRecording}">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="{'bg-[#7C3AED] animate-pulse': isRecording, 'bg-slate-400': !isRecording}"></span>
+                {{ isRecording ? 'Recibiendo transcripción...' : 'En espera — el profesor aún no activó el mic' }}
+              </div>
+              <div class="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold border border-rose-100 flex items-center gap-1.5" *ngIf="errorMsg">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                {{ errorMsg }}
+              </div>
+            </div>
+
+            <div class="flex-1 mx-6 mb-2 bg-[#F9FAFB] rounded-2xl border border-slate-100 p-6 flex flex-col overflow-hidden relative">
+              <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
+                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <svg class="w-4 h-4 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    Pizarra de {{ claseActual?.profesor || 'Docente' }}
+                 </span>
+                 <span class="text-xs font-bold text-[#2563EB] bg-blue-50 px-2 py-1 rounded border border-blue-100" *ngIf="finalText">{{ finalText.split(' ').length }} palabras</span>
+              </div>
+              
+              <div class="flex-1 overflow-y-auto text-[#111827] text-lg leading-relaxed font-medium pb-10">
+                <span *ngIf="isRecording" class="inline-block w-0.5 h-5 bg-[#7C3AED] animate-pulse mr-1 align-middle"></span>
+                <span>{{ finalText }}</span>
+                <span class="text-[#7C3AED] opacity-80" *ngIf="interimText"> {{ interimText }}</span>
+                
+                <span class="text-slate-400 italic font-normal" *ngIf="!finalText && !interimText && !isRecording">Esperando que el profesor inicie el dictado...</span>
+                <span class="text-[#7C3AED] italic font-normal" *ngIf="!finalText && !interimText && isRecording">Escuchando con IA...</span>
+              </div>
+
+              <!-- Clear Action -->
+              <div class="absolute bottom-6 right-6" *ngIf="finalText">
+                <button class="bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-200 shadow-sm p-2 rounded-xl transition-colors" (click)="voiceService.clear()" title="Limpiar Pizarra">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+
+          <div class="flex-1 flex flex-col items-center justify-center text-center p-12" *ngIf="!enClase">
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+               <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            </div>
+            <p class="text-[#6B7280] max-w-sm">Únete a una clase programada desde tu inicio para activar el aula virtual y recibir transcripción en vivo.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASIDE: INTERACCIÓN Y CHAT -->
+      <div class="lg:col-span-1 flex flex-col gap-6" *ngIf="enClase">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[600px] overflow-hidden">
+          
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+             <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+               <svg class="w-4 h-4 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+               Interacción
+             </h2>
+          </div>
+
+          <!-- Botones de Acción (Reacciones) -->
+          <div class="grid grid-cols-2 gap-3 p-5 border-b border-slate-100 bg-[#F9FAFB]/50">
+            <button class="bg-white hover:bg-orange-50 border border-slate-200 hover:border-orange-200 text-slate-700 font-bold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all focus:ring-2 focus:ring-orange-500 flex flex-col items-center justify-center gap-1 active:scale-95" (click)="enviarPreguntaRapida('No entendí')">
+              <span class="text-xl leading-none">🤔</span><span class="uppercase tracking-wider text-[9px] text-slate-400">No entendí</span>
+            </button>
+            <button class="bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-700 font-bold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all focus:ring-2 focus:ring-blue-500 flex flex-col items-center justify-center gap-1 active:scale-95" (click)="enviarPreguntaRapida('¿Puede repetir?')">
+              <span class="text-xl leading-none">🔁</span><span class="uppercase tracking-wider text-[9px] text-slate-400">Repetir</span>
+            </button>
+            <button class="col-span-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs py-2.5 px-3 rounded-xl shadow-sm transition-all focus:ring-2 focus:ring-slate-400 flex flex-row items-center justify-center gap-2 active:scale-95" (click)="enviarPreguntaRapida('Pausa por favor')">
+              <span class="text-lg leading-none">⏸️</span><span class="uppercase tracking-wider text-[10px] text-slate-400">Solicitar Pausa Crt.</span>
+            </button>
+          </div>
+
+          <!-- Chat Área -->
+          <div class="flex-1 p-5 overflow-y-auto bg-white flex flex-col gap-4">
+            <div *ngFor="let msg of mensajesChat" class="flex flex-col w-full max-w-[85%]" [ngClass]="msg.esMio ? 'self-end items-end' : 'self-start items-start'">
+               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 mx-1">{{ msg.esMio ? 'Tú' : msg.autor }} <span class="text-slate-300 font-normal ml-0.5">{{ msg.hora }}</span></span>
+               <div class="px-4 py-2.5 rounded-2xl text-sm font-medium break-words shadow-sm border border-transparent" [ngClass]="msg.esMio ? 'bg-[#2563EB] text-white rounded-br-none' : 'bg-slate-100 text-[#111827] rounded-bl-none border-slate-200'">
+                 {{ msg.texto }}
+               </div>
+            </div>
+            
+            <div class="h-full flex flex-col items-center justify-center opacity-60 text-center px-4" *ngIf="mensajesChat.length === 0">
+              <svg class="w-10 h-10 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Sin mensajes</p>
+            </div>
+          </div>
+
+          <!-- Input Bot -->
+          <div class="p-4 border-t border-slate-100 bg-[#F9FAFB]">
+            <div class="relative flex items-center bg-white rounded-2xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-[#2563EB] focus-within:border-[#2563EB] transition-all">
+              <input #preguntaInput type="text" class="flex-1 bg-transparent py-3 pl-4 pr-12 outline-none text-sm font-medium text-[#111827] placeholder-slate-400" placeholder="Escribe tu duda..." (keyup.enter)="enviarMensaje(preguntaInput.value); preguntaInput.value = ''"/>
+              <button class="absolute right-1 text-white bg-[#2563EB] hover:bg-blue-700 h-9 w-9 rounded-xl flex items-center justify-center transition-colors active:scale-95" (click)="enviarMensaje(preguntaInput.value); preguntaInput.value = ''">
+                <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

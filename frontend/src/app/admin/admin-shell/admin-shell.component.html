@@ -1,0 +1,75 @@
+<div class="h-screen flex overflow-hidden bg-[#F8FAFC] font-sans text-slate-800">
+  
+  <!-- SIDEBAR EJECUTIVO (ADMIN) -->
+  <aside class="w-72 bg-[#0B1120] text-slate-300 flex flex-col transition-all duration-300 flex-shrink-0 z-20 relative shadow-[4px_0_24px_rgba(0,0,0,0.1)] hidden md:flex">
+    
+    <!-- Logo & Brand -->
+    <div class="p-8 flex items-center gap-4 border-b border-slate-800/80">
+      <div class="bg-indigo-600/20 p-2.5 rounded-2xl border border-indigo-500/30 flex-shrink-0 shadow-inner">
+        <svg class="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-2xl font-black text-white tracking-tight leading-none">Eduvox</span>
+        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-1">Super Admin</span>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-2 custom-scrollbar">
+      
+      <!-- Cursos -->
+      <a routerLink="/admin/cursos" routerLinkActive="bg-indigo-600 shadow-[0_4px_12px_rgba(79,70,229,0.3)] text-white" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-400 hover:text-white font-bold transition-all group">
+        <svg class="w-5 h-5 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        <div class="flex-1 flex justify-between items-center">
+          <span>Gestión de Cursos</span>
+        </div>
+      </a>
+
+      <!-- Profesores -->
+      <a routerLink="/admin/profesores" routerLinkActive="bg-indigo-600 shadow-[0_4px_12px_rgba(79,70,229,0.3)] text-white" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-400 hover:text-white font-bold transition-all group">
+        <svg class="w-5 h-5 opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        <span>Profesores</span>
+      </a>
+
+      <!-- Estudiantes (Inactivo mock) -->
+      <a href="javascript:void(0)" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-400 hover:bg-slate-800/50 hover:text-white font-bold transition-all group cursor-not-allowed">
+        <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        <span>Estudiantes</span>
+        <span class="ml-auto text-[10px] uppercase font-black tracking-widest bg-slate-800 px-2 py-0.5 rounded text-slate-500">Pronto</span>
+      </a>
+      
+    </nav>
+
+    <!-- Admin Footer Section -->
+    <div class="p-4 border-t border-slate-800/80">
+      <button (click)="cerrarSesion()" class="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-slate-800/30 text-rose-400 hover:bg-rose-500 hover:text-white font-bold transition-all group border border-transparent hover:border-rose-400 hover:shadow-lg hover:shadow-rose-500/20 active:scale-95">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <div class="flex-1 flex flex-col relative overflow-hidden min-w-0 bg-[#F8FAFC]">
+    
+    <!-- TOP HEADER / BREADCRUMB -->
+    <header class="bg-white/80 backdrop-blur-md px-8 py-4 flex items-center justify-between border-b border-slate-200 shadow-sm z-10 sticky top-0">
+      <div class="flex items-center gap-2 text-sm font-bold text-slate-500 uppercase tracking-widest">
+         <span>Administración</span>
+         <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+         <span class="text-indigo-600 font-black">Panel Global</span>
+      </div>
+      
+      <!-- Badge de Estado -->
+      <div class="hidden sm:flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-xs font-bold border border-emerald-100 shadow-sm">
+         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+         Sistema Operativo
+      </div>
+    </header>
+
+    <!-- CONTENT SCROLLABLE (CHILD ROUTES INJECT) -->
+    <main class="flex-1 overflow-y-auto p-6 md:p-8 customized-scrollbar relative z-0">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

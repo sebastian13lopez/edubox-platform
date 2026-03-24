@@ -1,0 +1,238 @@
+<div class="min-h-screen bg-[#F9FAFB] text-[#111827] font-sans overflow-x-hidden">
+  
+  <div class="max-w-[1400px] mx-auto p-4 sm:p-8 lg:px-12 w-full pt-8 pb-20">
+    
+    <!-- HEADER SAAS -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight">Hola, {{ nombreEstudiante || 'Estudiante' }}</h1>
+        <p class="text-[#6B7280] font-medium mt-1">Hoy es un gran día para aprender algo nuevo. Tu progreso te espera.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="bg-white border border-slate-200 text-[#6B7280] rounded-xl px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          Mi Horario
+        </button>
+      </div>
+    </header>
+
+    <!-- SPINNER / LOADER -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20 px-4">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#2563EB]"></div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <ng-container *ngIf="!isLoading">
+      
+      <!-- GRID PRINCIPAL (Layout Asimétrico) -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        
+        <!-- COLUMNA IZQUIERDA (Principal: Clase en Vivo y Mis Cursos) -->
+        <div class="xl:col-span-2 space-y-8">
+          
+          <!-- SECCIÓN: CLASE EN VIVO DESTACADA (Solo si hay al menos un curso, simulamos que el primero está activo) -->
+          <div *ngIf="misCursos.length > 0" class="bg-white rounded-3xl p-6 md:p-8 border border-red-500/20 shadow-xl shadow-red-500/5 relative overflow-hidden group">
+            
+            <!-- Glow background -->
+            <div class="absolute -top-32 -right-32 w-64 h-64 bg-red-400/10 blur-3xl rounded-full"></div>
+            <div class="absolute -bottom-32 -left-32 w-64 h-64 bg-[#7C3AED]/10 blur-3xl rounded-full"></div>
+
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
+              
+              <!-- Info del Curso en Vivo -->
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="inline-flex items-center gap-2 bg-red-50 border border-red-100 text-[#EF4444] px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase">
+                    <span class="w-2 h-2 bg-[#EF4444] rounded-full animate-pulse"></span>
+                    En Vivo Ahora
+                  </span>
+                  <span class="text-xs font-bold text-[#6B7280] uppercase tracking-wider">{{ misCursos[0]?.profesor_id?.nombre || 'Profesor Designado' }}</span>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-[#111827] mb-2">{{ misCursos[0]?.nombre }}</h2>
+                <p class="text-[#6B7280] text-sm max-w-lg mb-6 leading-relaxed">{{ misCursos[0]?.descripcion || 'Sesión principal de la materia.' }}</p>
+                
+                <!-- Caja Violeta (Transcripción IA en Tiempo Real) -->
+                <div class="bg-[#F5F3FF] border border-[#DDD6FE] rounded-2xl p-5 mb-6 relative hover:border-[#8B5CF6] transition-colors group/ai">
+                  <div class="absolute top-0 right-0 p-3 flex gap-1">
+                    <div class="w-1.5 h-1.5 bg-[#8B5CF6] rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                    <div class="w-1.5 h-1.5 bg-[#8B5CF6] rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                    <div class="w-1.5 h-1.5 bg-[#8B5CF6] rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                  </div>
+                  <div class="flex items-center gap-2 mb-2 text-[#7C3AED]">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span class="text-xs font-bold uppercase tracking-wider">Edubox AI • Transcripción Activa</span>
+                  </div>
+                  <p class="text-[#7C3AED] text-[15px] font-medium leading-relaxed italic">"Entonces, si evaluamos la primera variable del sistema de ecuaciones... presten atención a este punto porque vendrá en el examen parcial."</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-4">
+                  <button (click)="entrarAulaVirtual(misCursos[0])" class="bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/25 transition-all outline-none flex items-center justify-center gap-2 sm:w-auto w-full">
+                    Ingresar al Salón
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                  </button>
+                  <button class="bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111827] active:scale-95 font-semibold py-3.5 px-5 rounded-xl transition-all sm:w-auto w-full flex items-center justify-center gap-2">
+                    Ver Pizarras
+                  </button>
+                </div>
+              </div>
+
+              <!-- Panel Lateral Derecho (Usuarios conectados y miniatura) -->
+              <div class="w-full md:w-64 flex flex-col gap-4">
+                
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-xs font-extrabold text-[#111827] uppercase tracking-wide">Participantes</h4>
+                    <span class="flex items-center gap-1.5 bg-green-50 text-[#22C55E] px-2 py-1 rounded-md text-xs font-bold border border-green-100">
+                      <span class="w-1.5 h-1.5 bg-[#22C55E] rounded-full"></span> 24 Activos
+                    </span>
+                  </div>
+                  <!-- Avatares Miniaturas Stacked -->
+                  <div class="flex -space-x-3 isolate">
+                    <div class="w-9 h-9 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-xs font-bold text-indigo-700 z-30">A</div>
+                    <div class="w-9 h-9 rounded-full bg-teal-100 border-2 border-white flex items-center justify-center text-xs font-bold text-teal-700 z-20">M</div>
+                    <div class="w-9 h-9 rounded-full bg-rose-100 border-2 border-white flex items-center justify-center text-xs font-bold text-rose-700 z-10">L</div>
+                    <div class="w-9 h-9 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-xs font-bold text-slate-500 z-0">+21</div>
+                  </div>
+                </div>
+
+                <!-- Simulación Video Thumbnail -->
+                <div class="w-full aspect-video bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border-4 border-slate-100 flex flex-col items-center justify-center relative overflow-hidden">
+                  <svg class="w-10 h-10 text-white/40 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                  <p class="text-white/60 text-xs font-semibold">Cámara del Profesor</p>
+                  <div class="absolute bottom-2 left-2 bg-black/50 backdrop-blur pb-px px-2 rounded text-[10px] font-bold text-white flex items-center gap-1">
+                    <div class="w-1 h-1 bg-red-500 rounded-full animate-pulse"></div> Live
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+
+          <!-- SECCIÓN: MIS CURSOS RESTANTES -->
+          <div>
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="text-xl font-bold text-[#111827]">Mi Progreso y Cursos</h3>
+              <a href="#" class="text-sm font-semibold text-[#2563EB] hover:underline">Ver todos</a>
+            </div>
+            
+            <div *ngIf="misCursos.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              
+              <!-- CURSO CARD (Ocultar el índice 0 para no repetir la clase en vivo, simulando funcionalidad) -->
+              <ng-container *ngFor="let curso of misCursos; let i = index">
+                <div *ngIf="i !== 0" class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group flex flex-col h-full">
+                  <div class="flex justify-between items-start mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center group-hover:bg-[#2563EB] group-hover:text-white transition-colors duration-300">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <!-- Micro progreso visual -->
+                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-2 border-slate-100 relative">
+                       <span class="text-[10px] font-bold text-slate-600">0%</span>
+                       <svg class="absolute inset-0 w-full h-full -rotate-90">
+                         <circle cx="18" cy="18" r="16" stroke="currentColor" stroke-width="2" fill="none" class="text-slate-100"></circle>
+                         <!-- Un círculo de progreso simulado (usaría stroke-dasharray para ser dinámico) -->
+                       </svg>
+                    </div>
+                  </div>
+                  
+                  <h4 class="text-lg font-bold text-[#111827] mb-1 group-hover:text-[#2563EB] transition-colors leading-tight">{{ curso.nombre }}</h4>
+                  <p class="text-[#6B7280] text-xs font-medium uppercase tracking-wide mb-5 flex-grow">{{ curso.profesor_id?.nombre || 'Docente' }}</p>
+
+                  <button (click)="entrarAulaVirtual(curso)" class="w-full bg-[#F9FAFB] hover:bg-[#2563EB] text-[#4B5563] hover:text-white font-semibold py-2.5 rounded-xl border border-slate-200 hover:border-transparent transition-all shadow-sm flex items-center justify-center gap-2">
+                    Acceder al Material
+                    <svg class="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                  </button>
+                </div>
+              </ng-container>
+
+              <div *ngIf="misCursos.length === 1" class="bg-white/50 rounded-2xl p-6 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+                <p class="text-[#6B7280] text-sm font-medium">Solo estás inscrito a un curso actualmente.</p>
+              </div>
+
+            </div>
+
+            <!-- EMPTY STATE GENERAL -->
+            <div *ngIf="misCursos.length === 0" class="bg-white rounded-3xl shadow-sm border border-slate-100 p-12 text-center flex flex-col items-center justify-center h-full">
+              <div class="w-20 h-20 bg-slate-50 rounded-full flex flex-col items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+              </div>
+              <h3 class="text-xl font-bold text-[#111827] mb-2">Aún no hay materias asignadas</h3>
+              <p class="text-[#6B7280] max-w-md mx-auto text-sm">Pronto aparecerán aquí tus cursos matriculados. El departamento académico está configurando tu base de estudios.</p>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- COLUMNA DERECHA (Asides: Tareas, Eventos, Historial) -->
+        <div class="xl:col-span-1 space-y-6">
+          
+          <!-- Widget: Tareas Pendientes -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <h3 class="text-lg font-bold text-[#111827] mb-4 flex items-center justify-between">
+              Próximas Actividades
+              <span class="bg-[#F59E0B]/10 text-[#F59E0B] text-xs px-2.5 py-0.5 rounded-lg font-bold">2 Pendientes</span>
+            </h3>
+            
+            <div class="space-y-4">
+              <!-- Item -->
+              <div class="flex items-start gap-4 pb-4 border-b border-slate-50 last:border-0 last:pb-0">
+                <div class="mt-1 w-2 h-2 rounded-full bg-[#F59E0B] ring-4 ring-orange-50"></div>
+                <div>
+                  <p class="text-sm font-bold text-[#111827] leading-tight mb-1">Práctica Calificada 1</p>
+                  <p class="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Física Moderna</p>
+                  <p class="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Vence Hoy, 11:59 PM
+                  </p>
+                </div>
+              </div>
+              <!-- Item -->
+              <div class="flex items-start gap-4 pb-4 border-b border-slate-50 last:border-0 last:pb-0">
+                <div class="mt-1 w-2 h-2 rounded-full bg-[#2563EB] ring-4 ring-blue-50"></div>
+                <div>
+                  <p class="text-sm font-bold text-[#111827] leading-tight mb-1">Lectura de Control</p>
+                  <p class="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Lenguaje</p>
+                  <p class="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Mañana
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button class="w-full mt-4 py-2 border border-slate-200 text-sm font-semibold text-[#111827] rounded-xl hover:bg-slate-50 transition-colors">Ver calendario completo</button>
+          </div>
+
+          <!-- Widget: Historial Reciente -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <h3 class="text-lg font-bold text-[#111827] mb-4">Historial Reciente</h3>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100">
+                <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-[#111827] truncate">Grabación: Algoritmos II</p>
+                  <p class="text-xs text-[#6B7280] truncate">Prof. Marcos Díaz</p>
+                </div>
+                <span class="text-xs font-semibold text-slate-400">Mar 22</span>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors border border-transparent hover:border-slate-100">
+                <div class="w-10 h-10 bg-[#F5F3FF] text-[#7C3AED] rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-[#111827] truncate">Apuntes IA generados</p>
+                  <p class="text-xs text-[#6B7280] truncate">Biología Avanzada</p>
+                </div>
+                <span class="text-xs font-semibold text-slate-400">Mar 21</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

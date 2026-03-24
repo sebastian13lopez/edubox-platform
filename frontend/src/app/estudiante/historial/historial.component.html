@@ -1,0 +1,54 @@
+<div class="min-h-screen bg-[#F9FAFB] font-sans text-[#111827] p-4 sm:p-8 w-full mx-auto">
+  <div class="max-w-7xl mx-auto">
+    <header class="mb-10">
+      <h1 class="text-3xl font-extrabold tracking-tight">Historial de Participación</h1>
+      <p class="text-[#6B7280] font-medium mt-1">Revisa el registro de todas las sesiones a las que has asistido.</p>
+    </header>
+
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20 px-4">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#2563EB]"></div>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+      <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden" *ngIf="historialParticipacion.length > 0; else sinHistorial">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] uppercase tracking-widest text-slate-400 font-black">
+                <th class="px-8 py-5">Fecha</th>
+                <th class="px-8 py-5">Curso</th>
+                <th class="px-8 py-5">Profesor</th>
+                <th class="px-8 py-5 rounded-tr-[2rem]">Duración</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let h of historialParticipacion" class="hover:bg-slate-50 transition-colors group">
+                <td class="px-8 py-5 text-sm font-bold text-[#111827] whitespace-nowrap">{{ h.fecha }}</td>
+                <td class="px-8 py-5 whitespace-nowrap">
+                  <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold bg-blue-50 text-[#2563EB] border border-blue-100 group-hover:bg-[#2563EB] group-hover:text-white transition-colors">{{ h.curso }}</span>
+                </td>
+                <td class="px-8 py-5 text-sm text-[#6B7280] font-medium whitespace-nowrap">{{ h.profesor }}</td>
+                <td class="px-8 py-5 text-sm text-[#111827] font-bold flex items-center gap-2 whitespace-nowrap">
+                  <div class="p-1.5 rounded-md bg-slate-100 text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  </div>
+                  {{ h.duracion }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <ng-template #sinHistorial>
+        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-16 text-center flex flex-col items-center">
+          <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <h3 class="text-xl font-bold text-[#111827] mb-2">Sin historial aún</h3>
+          <p class="text-[#6B7280] max-w-sm">Las clases a las que te unas aparecerán registradas aquí, documentando todo tu progreso y sesiones completadas.</p>
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+</div>

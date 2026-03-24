@@ -1,0 +1,240 @@
+.auth-container {
+  /* Scope CSS variables here so Angular ViewEncapsulation makes them available */
+  --bg-darker: #2E0466;
+  --bg-dark: #4B0F8A;
+  --primary: #7B4DFF;
+  
+  --form-bg: #ffffff;
+  --text-main: #1e113a;
+  --text-muted: #6b7280;
+  --input-bg: #f8f6fc;
+  --input-border: #e9e3f4;
+  --input-focus: rgba(123, 77, 255, 0.15);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh; /* exact viewport height */
+  
+  /* Tinted background so the white box stands out perfectly */
+  background: linear-gradient(135deg, #f0e8f8 0%, #ded2ef 100%);
+  
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden; /* absolutely no scrollbars inside the container */
+}
+
+/* Main Box */
+.auth-box {
+  display: flex;
+  background: var(--form-bg);
+  border-radius: 30px;
+  box-shadow: 0 25px 50px rgba(46, 4, 102, 0.12); /* nice purple shadow */
+  width: 90%; /* responsive width to ensure it doesn't touch the edges */
+  max-width: 1050px;
+  height: auto;
+  min-height: 550px; /* Reduced to ensure it fits laptops without scrolling */
+  max-height: 90vh; /* ensure it never grows larger than the screen */
+  overflow: hidden;
+  position: relative;
+  margin: auto;
+}
+
+/* --- Left Side (Branding & Illustration) --- */
+.auth-left {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem; /* Gap between the image and the edge of the card */
+  background: var(--form-bg);
+}
+
+.left-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* makes the image fill its container beautifully */
+  border-radius: 24px; /* inner roundness to mimic the design */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Right Side (Form) --- */
+.auth-right {
+  flex: 1;
+  padding: 3rem 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--form-bg);
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  width: 100px; /* Made bigger as requested */
+  height: 100px; /* Made bigger as requested */
+  object-fit: contain;
+}
+
+.auth-right h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0 0 2rem 0;
+  text-align: center;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-group input, 
+.custom-select {
+  width: 100%;
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  color: var(--text-main);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.custom-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 1.25rem;
+  pointer-events: none;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-group input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.input-group input:focus,
+.custom-select:focus {
+  border-color: var(--primary);
+  background: var(--form-bg);
+  box-shadow: 0 0 0 4px var(--input-focus);
+}
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: var(--primary);
+}
+
+.submit-btn {
+  background: var(--primary);
+  color: #ffffff !important;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(123, 77, 255, 0.4); 
+}
+
+.submit-btn:hover {
+  background: var(--bg-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(123, 77, 255, 0.5);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.card-footer {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.card-footer p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.3s ease;
+  margin-left: 0.25rem;
+}
+
+.link:hover {
+  text-decoration: underline;
+  color: var(--bg-dark);
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .auth-box {
+    flex-direction: column;
+    max-width: 500px;
+    min-height: auto;
+  }
+  
+  .auth-left {
+    padding: 1.5rem;
+  }
+  
+  .left-image {
+    max-width: 100%;
+  }
+
+  .auth-right {
+    padding: 2.5rem;
+  }
+}

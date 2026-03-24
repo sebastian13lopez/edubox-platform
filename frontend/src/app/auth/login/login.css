@@ -1,0 +1,337 @@
+/* ──────────────────────────────────────────────────────────────────────────────
+   Eduvox — Login Page Premium CSS Redesign
+   Style: Glassmorphism card, gradient mesh background, electric blue accent
+────────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+.auth-container {
+  --accent      : #3B82F6;
+  --accent-dark : #2563EB;
+  --accent-glow : rgba(59, 130, 246, 0.30);
+  --bg-gradient : #EFF6FF;
+  --form-bg     : rgba(255, 255, 255, 0.92);
+  --text-main   : #1F2937;
+  --text-muted  : #6B7280;
+  --input-bg    : #F8FAFC;
+  --input-border: #E5E7EB;
+  --input-focus : rgba(59, 130, 246, 0.12);
+
+  display        : flex;
+  justify-content: center;
+  align-items    : center;
+  width          : 100vw;
+  height         : 100vh;
+  overflow       : hidden;
+  font-family    : 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  position       : relative;
+
+  /* ─── Animated gradient mesh background ─────────── */
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 40%, #EDE9FE 80%, #E0E7FF 100%);
+
+  /* Decorative floating blobs */
+  &::before {
+    content      : '';
+    position     : absolute;
+    top          : -20%;
+    right        : -10%;
+    width        : 600px;
+    height       : 600px;
+    border-radius: 50%;
+    background   : radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+    animation    : float-blob1 8s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  &::after {
+    content      : '';
+    position     : absolute;
+    bottom       : -20%;
+    left         : -10%;
+    width        : 500px;
+    height       : 500px;
+    border-radius: 50%;
+    background   : radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%);
+    animation    : float-blob2 10s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+}
+
+@keyframes float-blob1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-40px, 60px) scale(1.15); }
+}
+
+@keyframes float-blob2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, -40px) scale(1.10); }
+}
+
+/* ─── Main Card ──────────────────────────────────────────────────────────────── */
+.auth-box {
+  display         : flex;
+  background      : var(--form-bg);
+  backdrop-filter : blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius   : 28px;
+  box-shadow      : 0 32px 64px rgba(15, 23, 42, 0.12),
+                    0 0 0 1px rgba(255, 255, 255, 0.70);
+  width           : 90%;
+  max-width       : 1020px;
+  height          : auto;
+  min-height      : 540px;
+  max-height      : 90vh;
+  overflow        : hidden;
+  position        : relative;
+  z-index         : 1;
+  animation       : card-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── Left Side (Illustration) ───────────────────────────────────────────────── */
+.auth-left {
+  flex           : 1;
+  display        : flex;
+  justify-content: center;
+  align-items    : center;
+  padding        : 1.75rem;
+  background     : linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 60%, #E0E7FF 100%);
+  position       : relative;
+  overflow       : hidden;
+
+  &::before {
+    content   : '';
+    position  : absolute;
+    inset     : 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(59,130,246,0.08), transparent 70%);
+  }
+}
+
+.left-image {
+  width        : 100%;
+  height       : 100%;
+  object-fit   : cover;
+  border-radius: 20px;
+  box-shadow   : 0 16px 40px rgba(15, 23, 42, 0.12);
+  position     : relative;
+  z-index      : 1;
+  transition   : transform 0.4s ease;
+
+  &:hover { transform: scale(1.01); }
+}
+
+/* ─── Right Side (Form) ──────────────────────────────────────────────────────── */
+.auth-right {
+  flex           : 1;
+  padding        : 3.5rem 4rem;
+  display        : flex;
+  flex-direction : column;
+  justify-content: center;
+  background     : var(--form-bg);
+}
+
+/* ─── Logo ──────────────────────────────────────────────────────────────────── */
+.logo-container {
+  display       : flex;
+  flex-direction: column;
+  align-items   : center;
+  margin-bottom : 2rem;
+}
+
+.logo {
+  width     : 96px;
+  height    : 96px;
+  object-fit: contain;
+  filter    : drop-shadow(0 8px 20px rgba(59,130,246,0.20));
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────────────── */
+.auth-right h2 {
+  font-size    : 2rem;
+  font-weight  : 800;
+  color        : var(--text-main);
+  margin       : 0 0 0.5rem;
+  text-align   : center;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  color        : var(--text-muted);
+  font-size    : 0.95rem;
+  margin       : 0 0 2.25rem;
+  text-align   : center;
+  font-weight  : 400;
+  line-height  : 1.5;
+}
+
+/* ─── Form ───────────────────────────────────────────────────────────────────── */
+.auth-form {
+  display       : flex;
+  flex-direction: column;
+  gap           : 1.1rem;
+}
+
+/* ─── Inputs ─────────────────────────────────────────────────────────────────── */
+.input-group {
+  position: relative;
+  display : flex;
+  align-items: center;
+}
+
+.input-group input {
+  width        : 100%;
+  background   : var(--input-bg);
+  border       : 1.5px solid var(--input-border);
+  color        : var(--text-main);
+  padding      : 1rem 1.25rem;
+  border-radius: 14px;
+  font-size    : 0.95rem;
+  font-weight  : 500;
+  font-family  : 'Inter', sans-serif;
+  outline      : none;
+  transition   : all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing   : border-box;
+}
+
+.input-group input::placeholder {
+  color      : #9CA3AF;
+  font-weight: 400;
+}
+
+.input-group input:focus {
+  border-color: var(--accent);
+  background  : #FFFFFF;
+  box-shadow  : 0 0 0 4px var(--input-focus),
+                0 2px 8px rgba(59,130,246,0.08);
+}
+
+/* ─── Password Toggle ────────────────────────────────────────────────────────── */
+.password-toggle {
+  position: absolute;
+  right   : 1rem;
+  background: none;
+  border  : none;
+  color   : #9CA3AF;
+  cursor  : pointer;
+  padding : 0.25rem;
+  display : flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+  color     : var(--accent);
+  background: rgba(59,130,246,0.08);
+}
+
+/* ─── Forgot Password ────────────────────────────────────────────────────────── */
+.forgot-password {
+  display        : flex;
+  justify-content: flex-end;
+  margin-top     : -0.25rem;
+}
+
+.forgot-password a {
+  color          : var(--accent);
+  font-size      : 0.85rem;
+  text-decoration: none;
+  font-weight    : 600;
+  transition     : color 0.2s ease;
+}
+
+.forgot-password a:hover {
+  color          : var(--accent-dark);
+  text-decoration: underline;
+}
+
+/* ─── Submit Button ──────────────────────────────────────────────────────────── */
+.submit-btn {
+  background   : linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color        : #ffffff !important;
+  border       : none;
+  padding      : 1.05rem;
+  border-radius: 14px;
+  font-size    : 0.975rem;
+  font-weight  : 700;
+  font-family  : 'Inter', sans-serif;
+  letter-spacing: 0.01em;
+  cursor       : pointer;
+  margin-top   : 0.75rem;
+  transition   : all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow   : 0 8px 24px var(--accent-glow);
+  position     : relative;
+  overflow     : hidden;
+
+  /* Shimmer effect on hover */
+  &::before {
+    content   : '';
+    position  : absolute;
+    top       : 0;
+    left      : -100%;
+    width     : 60%;
+    height    : 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    transition: left 0.5s ease;
+  }
+}
+
+.submit-btn:hover {
+  transform  : translateY(-2px);
+  box-shadow : 0 12px 32px rgba(59,130,246,0.40);
+}
+
+.submit-btn:hover::before { left: 160%; }
+
+.submit-btn:active {
+  transform : translateY(0);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────────────── */
+.card-footer {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.card-footer p {
+  color      : var(--text-muted);
+  font-size  : 0.925rem;
+  margin     : 0;
+  font-weight: 450;
+}
+
+.link {
+  color          : var(--accent);
+  text-decoration: none;
+  font-weight    : 700;
+  transition     : color 0.2s ease;
+  margin-left    : 0.3rem;
+}
+
+.link:hover {
+  color          : var(--accent-dark);
+  text-decoration: underline;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .auth-box {
+    flex-direction: column;
+    max-width     : 480px;
+    min-height    : auto;
+    border-radius : 24px;
+  }
+
+  .auth-left  { padding: 1.5rem; min-height: 220px; }
+  .auth-right { padding: 2.5rem 2rem; }
+}
+
+@media (max-width: 480px) {
+  .auth-right { padding: 2rem 1.5rem; }
+  .auth-right h2 { font-size: 1.65rem; }
+}
