@@ -24,12 +24,13 @@ export class AuthService {
   // --- Novedades para Protección de Rutas ---
 
   // Guardar datos en el navegador del usuario
-  guardarToken(token: string, rol: string, nombre: string = 'Usuario', correo: string = '', id: string = '') {
+  guardarToken(token: string, rol: string, nombre: string = 'Usuario', correo: string = '', id: string = '', estado: string = '') {
     localStorage.setItem('auth_token', token);
     localStorage.setItem('auth_rol', rol);
     localStorage.setItem('auth_nombre', nombre);
     localStorage.setItem('auth_correo', correo);
     if(id) localStorage.setItem('auth_id', id);
+    if(estado) localStorage.setItem('auth_estado', estado);
   }
 
   // Obtener id del usuario
@@ -40,6 +41,11 @@ export class AuthService {
   // Obtener nombre del usuario
   getNombreUsuario(): string {
     return localStorage.getItem('auth_nombre') || 'Usuario';
+  }
+
+  // Obtener estado del usuario (ej: Pendiente o Aprobado)
+  getEstadoUsuario(): string {
+    return localStorage.getItem('auth_estado') || '';
   }
 
   // Obtener correo del usuario
@@ -64,5 +70,6 @@ export class AuthService {
     localStorage.removeItem('auth_nombre');
     localStorage.removeItem('auth_correo');
     localStorage.removeItem('auth_id');
+    localStorage.removeItem('auth_estado');
   }
 }

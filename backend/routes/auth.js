@@ -64,8 +64,8 @@ router.post('/login', async (req, res) => {
       { expiresIn: '2h' }, // El token caduca en 2 horas por seguridad
       (error, token) => {
         if (error) throw error;
-        // Si todo sale bien, devolvemos el token, id, rol y nombre
-        res.json({ token, id: usuario.id, rol: usuario.rol, nombre: usuario.nombre });
+        // Si todo sale bien, devolvemos el token, id, rol, nombre y ESTADO
+        res.json({ token, id: usuario.id, rol: usuario.rol, nombre: usuario.nombre, estado: usuario.estado });
       }
     );
 

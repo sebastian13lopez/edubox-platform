@@ -23,7 +23,7 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
   finishingBuffer = ''; 
   interimText = ''; 
 
-  textosRecientes: string[] = [];
+  textosRecientes: any[] = [];
   
   isProcessingIA = false;
   errorMsg    = '';

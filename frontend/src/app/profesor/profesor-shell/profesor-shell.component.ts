@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
 export class ProfesorShellComponent implements OnInit {
 
   nombreProfesor = '';
+  estadoProfesor = '';
 
   // Menú lateral — cada item tiene routerLink relativo al shell
   navItems = [
@@ -43,11 +44,12 @@ export class ProfesorShellComponent implements OnInit {
 
   ngOnInit(): void {
     this.nombreProfesor = this.authService.getNombreUsuario();
+    // Normalizamos el estado para no tener problemas de mayúsculas
+    this.estadoProfesor = (this.authService.getEstadoUsuario() || '').trim().toLowerCase();
   }
 
   onLogout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('rol');
+    this.authService.cerrarSesionLocal();
     this.router.navigate(['/login']);
   }
 }

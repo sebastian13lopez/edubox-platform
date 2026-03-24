@@ -37,7 +37,8 @@ export class Login {
         const nombre = res.nombre || 'Usuario';
         const correo = this.datos.correo || '';
         const id = res.id || '';
-        this.authService.guardarToken(token, rol, nombre, correo, id);
+        const estado = res.estado || '';
+        this.authService.guardarToken(token, rol, nombre, correo, id, estado);
 
         // Redirigir dependiendo del Rol (estandarizado a minúsculas para coincidir con backend)
         const rolNormalize = rol.toLowerCase();

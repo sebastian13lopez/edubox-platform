@@ -32,7 +32,7 @@ router.put('/profesor/aprobar/:id', async (req, res) => {
   try {
     const { id } = req.params;
     // Actualizamos el estado a 'Aprobado' para permitirle login o acceso
-    const profesor = await User.findByIdAndUpdate(id, { estado: 'Aprobado' }, { new: true }).select('-password');
+    const profesor = await User.findByIdAndUpdate(id, { estado: 'Aprobado' }, { returnDocument: 'after' }).select('-password');
     if (!profesor) {
       return res.status(404).json({ mensaje: 'Profesor no encontrado' });
     }

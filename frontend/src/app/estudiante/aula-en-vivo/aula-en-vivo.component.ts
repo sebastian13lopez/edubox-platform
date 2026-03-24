@@ -18,6 +18,7 @@ export class AulaEnVivoComponent implements OnInit {
 
   // Transcripción en vivo
   isRecording = false;
+  textosRecientes: any[] = [];
   finalText   = '';
   interimText = '';
   errorMsg    = '';
@@ -43,9 +44,10 @@ export class AulaEnVivoComponent implements OnInit {
       this.voiceService.clear();
     }
 
-    this.voiceService.finalText$.subscribe(t   => { this.finalText   = t; this.cdr.detectChanges(); });
-    this.voiceService.interimText$.subscribe(t  => { this.interimText = t; this.cdr.detectChanges(); });
-    this.voiceService.isListening$.subscribe(a  => { this.isRecording = a; this.cdr.detectChanges(); });
+    this.voiceService.textosRecientes$.subscribe(textos => { this.textosRecientes = textos; this.cdr.detectChanges(); });
+    this.voiceService.text$.subscribe(t   => { this.finalText   = t;     this.cdr.detectChanges(); });
+    this.voiceService.interimText$.subscribe(t  => { this.interimText = t;    this.cdr.detectChanges(); });
+    this.voiceService.isListening$.subscribe(a  => { this.isRecording = a;    this.cdr.detectChanges(); });
     this.voiceService.error$.subscribe(e        => { this.errorMsg    = e; this.cdr.detectChanges(); });
   }
 

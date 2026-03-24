@@ -1,3 +1,4 @@
+<ng-container *ngIf="estadoProfesor === 'aprobado' || estadoProfesor === 'activo'; else vistaPendiente">
 <div class="flex h-screen bg-[#F9FAFB] font-sans overflow-hidden">
   
   <!-- SIDEBAR OSCURA BALANCEADA (Slate 900) -->
@@ -67,3 +68,36 @@
     </div>
   </main>
 </div>
+</ng-container>
+
+<ng-template #vistaPendiente>
+  <div class="flex h-screen w-full bg-[#0F172A] items-center justify-center p-6 font-sans">
+    <div class="max-w-md w-full bg-[#1E293B] rounded-3xl p-8 text-center shadow-2xl border border-white/5 relative overflow-hidden">
+      <!-- Glow effect -->
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+      <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+      <div class="relative z-10">
+        <!-- Logo animado -->
+        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-slate-800/50 border border-slate-700 mb-6 shadow-inner relative">
+           <svg class="w-10 h-10 text-indigo-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+           <div class="absolute inset-0 rounded-full border-2 border-indigo-500/30 border-t-indigo-400 animate-spin" style="animation-duration: 3s;"></div>
+        </div>
+
+        <h2 class="text-3xl font-extrabold text-white tracking-tight mb-3">Cuenta en Revisión</h2>
+        
+        <p class="text-slate-400 text-sm leading-relaxed mb-8 font-medium">
+          ¡Hola, <span class="text-white">{{ nombreProfesor }}</span>! Nos alegra que te postules para ser Docente en Eduvox. Actualmente tu cuenta docente está a la espera de ser <strong>aprobada por un administrador</strong>. Una vez autorizada, podrás acceder al panel maestro y crear aulas en vivo.<br><br>
+          <span class="text-indigo-300 text-xs italic">¿Ya fuiste aprobado? Cierra sesión y vuelve a entrar para actualizar tus credenciales de acceso local.</span>
+        </p>
+
+        <div class="space-y-4">
+          <button (click)="onLogout()" class="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] active:scale-95 border border-indigo-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            Entendido, cerrar sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
