@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 import { CursoService } from '../../services/curso.service';
 import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-estudiante-inicio',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule],
   templateUrl: './inicio.component.html',
   styleUrls: ['./inicio.component.scss']
 })

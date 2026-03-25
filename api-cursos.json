@@ -1,0 +1,25 @@
+﻿{
+    "value":  [
+                  {
+                      "_id":  "69c35bbb2204df49535cb2ce",
+                      "nombre":  "Gestion",
+                      "descripcion":  "",
+                      "profesor_id":  {
+                                          "_id":  "69c1e8b7155a5bbabdeb91c2",
+                                          "nombre":  "Profesor Marcos",
+                                          "email":  "marcoscastellanos@voxera.com"
+                                      },
+                      "estudiantes":  [
+                                          {
+                                              "_id":  "69c1e8dc155a5bbabdeb91c5",
+                                              "nombre":  "Julian Pedraza",
+                                              "email":  "julian.pedraza@voxera.com"
+                                          }
+                                      ],
+                      "createdAt":  "2026-03-25T03:51:23.558Z",
+                      "updatedAt":  "2026-03-25T03:51:23.558Z",
+                      "__v":  0
+                  }
+              ],
+    "Count":  1
+}
