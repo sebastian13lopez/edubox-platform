@@ -1,11 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-admin-profesores',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-profesores.component.html',
   styles: []
 })
@@ -14,6 +15,16 @@ export class AdminProfesoresComponent implements OnInit {
   profesores: any[] = [];
   cargando: boolean = true;
   procesandoId: string | null = null;
+
+  mostrarModal: boolean = false;
+  creandoProfesor: boolean = false;
+  nuevoProfesor = {
+    nombre: '',
+    correo: '',
+    password: '',
+    telefono: '',
+    tituloProfesional: ''
+  };
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
@@ -45,6 +56,43 @@ export class AdminProfesoresComponent implements OnInit {
         console.error('Error HTTP cargando profesores:', err);
         // Aunque haya error, apagamos el spinner
         this.cargando = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  abrirModal() {
+    this.mostrarModal = true;
+  }
+
+  cerrarModal() {
+    this.mostrarModal = false;
+    this.nuevoProfesor = {
+      nombre: '',
+      correo: '',
+      password: '',
+      telefono: '',
+      tituloProfesional: ''
+    };
+  }
+
+  crearProfesor(form: any) {
+    if (form.invalid) return;
+    this.creandoProfesor = true;
+    this.cdr.detectChanges();
+
+    this.http.post('http://localhost:3000/api/usuarios/profesor/crear', this.nuevoProfesor).subscribe({
+      next: (res: any) => {
+        this.profesores.unshift(res); // Añadir al principio de la lista local
+        this.cerrarModal();
+        this.creandoProfesor = false;
+        alert('Profesor añadido correctamente al sistema.');
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.creandoProfesor = false;
+        console.error('Error creando profesor:', err);
+        alert(err.error?.mensaje || 'Error al intentar crear el profesor.');
         this.cdr.detectChanges();
       }
     });

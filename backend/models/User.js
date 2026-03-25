@@ -13,6 +13,14 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
+  telefono: {
+    type: String,
+    trim: true
+  },
+  tituloProfesional: {
+    type: String,
+    trim: true
+  },
   password: {
     type: String,
     required: true

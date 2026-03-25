@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 // --- RUTA: Obtener todos los profesores (o los que estén pendientes) ---
 // GET /api/usuarios/pendientes
@@ -27,6 +28,41 @@ router.get('/', async (req, res) => {
     res.status(500).json({ mensaje: 'Error obteniendo usuarios' });
   }
 });
+// --- RUTA: Crear profesor manualmente por el Admin ---
+router.post('/profesor/crear', async (req, res) => {
+  try {
+    const { nombre, correo, password, telefono, tituloProfesional } = req.body;
+    const email = correo;
+
+    let usuario = await User.findOne({ email });
+    if (usuario) {
+      return res.status(400).json({ mensaje: 'El correo ya está registrado' });
+    }
+
+    usuario = new User({ 
+      nombre, 
+      email, 
+      password, 
+      rol: 'profesor',
+      estado: 'Activo', // Se aprueba automáticamente
+      telefono, 
+      tituloProfesional 
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    usuario.password = await bcrypt.hash(password, salt);
+
+    await usuario.save();
+    
+    const usuarioCreado = await User.findById(usuario._id).select('-password');
+    res.status(201).json(usuarioCreado);
+
+  } catch (error) {
+    console.error('Error creando profesor desde admin:', error);
+    res.status(500).json({ mensaje: 'Error al crear profesor' });
+  }
+});
+
 // --- RUTA: Aprobar a un profesor ---
 router.put('/profesor/aprobar/:id', async (req, res) => {
   try {

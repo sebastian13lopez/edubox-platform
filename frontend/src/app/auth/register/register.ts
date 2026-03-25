@@ -12,11 +12,13 @@ import { AuthService } from '../../services/auth';
   styleUrls: ['./register.css'],
 })
 export class Register {
-  nuevoUsuario = {
+  nuevoUsuario: any = {
     nombre: '',
     correo: '',
     password: '',
-    rol: 'Estudiante'
+    rol: 'Estudiante',
+    telefono: '',
+    tituloProfesional: ''
   };
 
   showPassword = false;

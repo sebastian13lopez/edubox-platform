@@ -7,7 +7,7 @@ const User = require('../models/User');
 // --- RUTA 1: Registrar un nuevo usuario ---
 router.post('/register', async (req, res) => {
   try {
-    const { nombre, correo, password, rol } = req.body;
+    const { nombre, correo, password, rol, telefono, tituloProfesional } = req.body;
 
     const email = correo; // Adaptando del frontend 'correo' al backend 'email'
     const rolNormalizado = rol ? rol.toLowerCase() : 'estudiante';
@@ -17,7 +17,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ mensaje: 'El correo ya está registrado' });
     }
 
-    usuario = new User({ nombre, email, password, rol: rolNormalizado });
+    usuario = new User({ nombre, email, password, rol: rolNormalizado, telefono, tituloProfesional });
 
     const salt = await bcrypt.genSalt(10);
     usuario.password = await bcrypt.hash(password, salt);

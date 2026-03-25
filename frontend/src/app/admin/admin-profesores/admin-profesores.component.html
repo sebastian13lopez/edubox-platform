@@ -5,9 +5,15 @@
       <h2 class="text-3xl font-extrabold text-[#111827] tracking-tight">Gestión de Docentes</h2>
       <p class="text-slate-500 text-sm font-medium mt-1">Autoriza los accesos y monitorea a tu equipo de profesores inscritos.</p>
     </div>
-    <div class="bg-indigo-50 text-indigo-700 text-sm font-bold px-4 py-2 rounded-xl mt-4 sm:mt-0 shadow-sm flex items-center gap-2">
-      <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-      {{ profesores.length }} Registros
+    <div class="flex items-center gap-3 mt-4 sm:mt-0">
+      <div class="bg-indigo-50 text-indigo-700 text-sm font-bold px-4 py-2 rounded-xl shadow-sm flex items-center gap-2">
+        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        {{ profesores.length }} Registros
+      </div>
+      <button (click)="abrirModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm transition-colors flex items-center gap-2 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Añadir Profesor
+      </button>
     </div>
   </div>
 
@@ -108,5 +114,72 @@
       <p class="text-slate-500 max-w-md mx-auto text-sm font-medium leading-relaxed">Aún no se han registrado docentes en la plataforma o hubo un error al consultar el directorio de identidades.</p>
     </div>
   </ng-template>
+
+  <!-- Modal Añadir Profesor -->
+  <div *ngIf="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in px-4">
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 sm:p-8 relative animate-fade-in-up border border-slate-200">
+      <button (click)="cerrarModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors bg-slate-100 hover:bg-slate-200 rounded-full p-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <h3 class="text-2xl font-extrabold text-slate-800 mb-6 flex items-center gap-3">
+        <div class="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+        </div>
+        Crear Profesor
+      </h3>
+
+      <form #formProfesor="ngForm" (ngSubmit)="crearProfesor(formProfesor)" class="space-y-4">
+        
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1">Nombre Completo</label>
+          <input type="text" [(ngModel)]="nuevoProfesor.nombre" name="nombre" required placeholder="Ej: Juan Pérez"
+            class="w-full px-4 py-3 bg-slate-50 text-slate-700 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder-slate-400 font-medium">
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1">Correo Electrónico</label>
+          <input type="email" [(ngModel)]="nuevoProfesor.correo" name="correo" required placeholder="profesor@eduvox.com"
+            class="w-full px-4 py-3 bg-slate-50 text-slate-700 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder-slate-400 font-medium">
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1">Contraseña de acceso</label>
+          <input type="password" [(ngModel)]="nuevoProfesor.password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres"
+            class="w-full px-4 py-3 bg-slate-50 text-slate-700 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder-slate-400 font-medium">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Teléfono</label>
+            <input type="tel" [(ngModel)]="nuevoProfesor.telefono" name="telefono" required placeholder="Número"
+              class="w-full px-4 py-3 bg-slate-50 text-slate-700 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder-slate-400 font-medium">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Título</label>
+            <select [(ngModel)]="nuevoProfesor.tituloProfesional" name="tituloProfesional" required
+              class="w-full px-4 py-3 bg-slate-50 text-slate-700 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all cursor-pointer font-medium"
+              [class.text-slate-400]="nuevoProfesor.tituloProfesional === ''">
+              <option value="" disabled selected hidden>Selecciona</option>
+              <option value="Licenciatura" class="text-slate-700">Licenciatura</option>
+              <option value="Ingeniería" class="text-slate-700">Ingeniería</option>
+              <option value="Maestría / Magíster" class="text-slate-700">Maestría / Magíster</option>
+              <option value="Doctorado" class="text-slate-700">Doctorado</option>
+              <option value="Técnico Superior" class="text-slate-700">Técnico Superior</option>
+              <option value="Especialización" class="text-slate-700">Especialización</option>
+              <option value="Otro" class="text-slate-700">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="formProfesor.invalid || creandoProfesor"
+          class="w-full mt-6 bg-indigo-600 text-white font-bold text-lg py-3 rounded-xl hover:bg-indigo-700 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/40 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-indigo-500/50 flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="creandoProfesor" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          {{ creandoProfesor ? 'Verificando...' : 'Guardar y Autorizar' }}
+        </button>
+
+      </form>
+    </div>
+  </div>
 
 </div>
