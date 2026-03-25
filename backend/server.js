@@ -25,35 +25,45 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-// Rutas de la API 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/usuarios', require('./routes/usuarios'));
-app.use('/api/cursos', require('./routes/cursos'));
-app.use('/api/historial', require('./routes/historial'));
+// ==========================================
+// 1. ENRUTAMIENTO REST (El Menú del Restaurante)
+// ==========================================
+// Aquí conectamos las URLs que Angular va a consumir con los archivos lógicos de la DB
+app.use('/api/auth', require('./routes/auth'));           // Manejo de JWT (Login/Registro)
+app.use('/api/usuarios', require('./routes/usuarios'));   // CRUD Usuarios
+app.use('/api/cursos', require('./routes/cursos'));       // CRUD Cursos
+app.use('/api/historial', require('./routes/historial')); // Guardado de la transcripción IA
 
-// Conexión a MongoDB Atlas
+// ==========================================
+// 2. CONEXIÓN A MONGODB (La Despensa)
+// ==========================================
+// Mongoose traduce la DB NoSQL para poder manejarla como Objetos Javascript
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('¡Conectado a la base de datos de Voxera en MongoDB Atlas!'))
-  .catch((error) => console.error('Error conectando a MongoDB:', error));
+  .then(() => console.log('🟢 ¡Conectado a la base de datos de Voxera en MongoDB Atlas!'))
+  .catch((error) => console.error('🔴 Error conectando a MongoDB:', error));
 
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.send('API de Voxera funcionando correctamente.');
 });
 
-// === LÓGICA DE WEBSOCKETS (CHAT Y PRESENCIA EN AULA VIRTUAL) ===
+// ==========================================
+// 3. LÓGICA DE WEBSOCKETS (Chat y Presencia Real-Time)
+// ==========================================
+// Los websockets mantienen una tubería TCP abierta bi-direccional.
 
-// Registro temporal en memoria: { cursoId: [ { socketId, idUsuario, nombre, rol }, ... ] }
+// Registro temporal en memoria RAM: { cursoId: [ { socketId, idUsuario, nombre, rol }, ... ] }
 const usuariosPorClase = new Map();
 
 io.on('connection', (socket) => {
-  console.log('🔌 Nuevo cliente conectado:', socket.id);
+  console.log('🔌 Nuevo cliente conectado (Túnel TCP Abierto):', socket.id);
 
-  // 1. Unirse a la Clase / Aula
+  // --- EVENTO: Unirse a la Clase / Aula ---
   socket.on('unirse-clase', ({ cursoId, usuario }) => {
+    // socket.join() aísla el broadcast a este curso único (Cuarto privado)
     socket.join(cursoId);
     
-    // Almacenamos en el socket de memoria su estado actual para cuando se desconecte
+    // Almacenamos en el socket su estado actual para poder borrarlo cuando se desconecte
     socket.cursoActual = cursoId;
     socket.usuarioActual = usuario;
 
@@ -74,7 +84,7 @@ io.on('connection', (socket) => {
     console.log(`👤 ${usuario.nombre} se unió al aula ${cursoId}`);
   });
 
-  // 2. Enviar Mensaje en el Chat
+  // --- EVENTO: Enviar Mensaje en el Chat ---
   socket.on('enviar-mensaje', async ({ cursoId, autor_id, texto, nombreAutor }) => {
     try {
         // Guardamos el mensaje permanentemente en MongoDB
@@ -85,7 +95,7 @@ io.on('connection', (socket) => {
         });
         await nuevoMensaje.save();
 
-        // Emitimos a la sala (sin incluir al remitente, porque él ya aplicó un push local optimista)
+        // Emitimos a la sala (usar socket.to impide que el mensaje doble rebote al creador original)
         socket.to(cursoId).emit('nuevo-mensaje', {
             _id: nuevoMensaje._id,
             curso_id: cursoId,

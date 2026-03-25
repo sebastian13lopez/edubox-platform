@@ -47,6 +47,7 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
   ngOnInit(): void {
     this.browserOk = this.voiceService.isSupported();
 
+    // 1. AL CARGAR EL COMPONENTE (Manejo de Caché y Sesión)
     const stored = localStorage.getItem('claseActual');
     if (stored) {
       this.claseActual = JSON.parse(stored);
@@ -56,11 +57,13 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
         rol: this.authService.obtenerRol() || 'profesor'
       };
       
+      // Conectamos el Tunnel TCP con Socket.io
       this.chatService.unirseAClase(String(this.claseActual.id), this.usuarioActivo);
       
+      // Escuchadores Reactivos (Observables de RxJS)
       this.chatService.escucharUsuariosActualizados().subscribe(usuarios => {
         this.usuariosActivos = usuarios;
-        this.cdr.detectChanges();
+        this.cdr.detectChanges(); // Forzar repintado del DOM (Online List)
       });
       
       this.chatService.escucharNuevosMensajes().subscribe(mensaje => {
@@ -160,11 +163,16 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
     this.voiceService.clear();
   }
 
+  /**
+   * Módulo de Persistencia y Reportes (Botón Guardar y Salir)
+   * Dispara el empaquetamiento del historial a la base de datos REST.
+   */
   finalizarYDescargar(): void {
-    // 1. Guardar en documento Word local
+    // 1. Exportación manual a Word para registro físico
     this.voiceService.descargarTranscripcionWord();
     
-    // 2. Guardar en la Base de Datos Historial
+    // 2. Guardado Seguro en MongoDB (API REST HTTP POST)
+    // Se extrae la cadena completa del servicio de voz (que captura los Web Speech API chunks)
     if (this.claseActual && this.voiceService.historialCompleto) {
        this.cursoService.guardarHistorialClase({
           curso_id: this.claseActual.id,
@@ -172,12 +180,13 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
           textoCompleto: this.voiceService.historialCompleto,
           participantes: this.usuariosActivos.map(u => u.nombre)
        }).subscribe({
-          next: () => console.log("Historial guardado exitosamente en MongoDB"),
+          // Subscribe inicia la llamada Asíncrona RXJS.
+          next: () => console.log("Historial guardado exitosamente en MongoDB Atlas"),
           error: (err) => console.error("Error al guardar historial:", err)
        });
     }
 
-    // 3. Limpiar estado
+    // 3. Limpiar estado de hardware (Apaga micrófono)
     this.claseIniciada = false;
     this.clasePausada = false;
     this.voiceService.stop();
