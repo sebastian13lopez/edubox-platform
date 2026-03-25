@@ -30,9 +30,11 @@
     </header>
 
     <!-- MAIN GRID -->
-    <div class="flex-1 grid grid-cols-1 w-full relative">
-      <div
-        class="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[700px] overflow-hidden relative group">
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
+      
+      <!-- COLUMNA PRINCIPAL IA -->
+      <div class="lg:col-span-2 flex flex-col gap-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[700px] overflow-hidden relative group">
 
         <!-- Toolbar Docente -->
         <div
@@ -199,8 +201,63 @@
               (click)="voiceService.clear()">Vaciar Memoria Local</button>
           </div>
 
+          </div>
         </div>
       </div>
+
+      <!-- ASIDE: INTERACCIÓN Y CHAT -->
+      <div class="lg:col-span-1 flex flex-col gap-6">
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[700px] overflow-hidden">
+          
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+             <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+               <svg class="w-4 h-4 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+               Interacción
+             </h2>
+          </div>
+
+          <!-- Participantes Activos -->
+          <div class="px-5 py-3 border-b border-slate-100 bg-white">
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+               <span class="w-2 h-2 bg-[#22C55E] rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span> 
+               {{ usuariosActivos.length }} Online
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-200 shadow-sm" *ngFor="let m of usuariosActivos">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="m.rol === 'profesor' ? 'bg-blue-500' : 'bg-[#EF4444]'"></span> 
+                {{ m.nombre }} <span class="text-slate-400 font-medium ml-1" *ngIf="m.rol === 'profesor'">(Profe)</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Chat Área -->
+          <div class="flex-1 p-5 overflow-y-auto bg-white flex flex-col gap-4">
+            <div *ngFor="let msg of mensajesChat" class="flex flex-col w-full max-w-[85%]" [ngClass]="msg.esMio ? 'self-end items-end' : 'self-start items-start'">
+               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 mx-1">{{ msg.esMio ? 'Tú' : msg.autor }} <span class="text-slate-300 font-normal ml-0.5">{{ msg.hora }}</span></span>
+               <div class="px-4 py-2.5 rounded-2xl text-sm font-medium break-words shadow-sm border border-transparent" [ngClass]="msg.esMio ? 'bg-[#2563EB] text-white rounded-br-none' : 'bg-slate-100 text-[#111827] rounded-bl-none border-slate-200'">
+                 {{ msg.texto }}
+               </div>
+            </div>
+            
+            <div class="h-full flex flex-col items-center justify-center opacity-60 text-center px-4" *ngIf="mensajesChat.length === 0">
+              <svg class="w-10 h-10 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mesa de clase sin mensajes</p>
+            </div>
+          </div>
+
+          <!-- Input Docente -->
+          <div class="p-4 border-t border-slate-100 bg-[#F9FAFB]">
+            <div class="relative flex items-center bg-white rounded-2xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-[#2563EB] focus-within:border-[#2563EB] transition-all">
+              <input #preguntaInput type="text" class="flex-1 bg-transparent py-3 pl-4 pr-12 outline-none text-sm font-medium text-[#111827] placeholder-slate-400" placeholder="Escribe un anuncio..." (keyup.enter)="enviarMensaje(preguntaInput.value); preguntaInput.value = ''" [disabled]="!claseIniciada"/>
+              <button class="absolute right-1 text-white bg-[#2563EB] hover:bg-blue-700 disabled:opacity-50 h-9 w-9 rounded-xl flex items-center justify-center transition-colors active:scale-95" (click)="enviarMensaje(preguntaInput.value); preguntaInput.value = ''" [disabled]="!claseIniciada">
+                <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      
     </div>
   </div>
 </div>

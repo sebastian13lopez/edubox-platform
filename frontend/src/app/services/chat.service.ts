@@ -32,6 +32,32 @@ export class ChatService {
     }
   }
 
+  // === TRANSCRIPCIÓN REAL-TIME ===
+
+  enviarTranscripcion(cursoId: string, textos: any[]): void {
+    this.socket.emit('transmision-texto', { cursoId, textos });
+  }
+
+  escucharTranscripcion(): Observable<any[]> {
+    return new Observable(observer => {
+      this.socket.on('actualizacion-transcripcion', (textos) => {
+        observer.next(textos);
+      });
+    });
+  }
+
+  enviarInterim(cursoId: string, interimText: string): void {
+    this.socket.emit('transmision-interim', { cursoId, interimText });
+  }
+
+  escucharInterim(): Observable<string> {
+    return new Observable(observer => {
+      this.socket.on('actualizacion-interim', (interim) => {
+        observer.next(interim);
+      });
+    });
+  }
+
   // === ESCUCHAR EVENTOS DESDE EL SERVIDOR (OBSERVABLES) ===
 
   escucharNuevosMensajes(): Observable<any> {

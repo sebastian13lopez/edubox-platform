@@ -25,4 +25,22 @@ export class CursoService {
   obtenerCursosEstudiante(estudianteId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/estudiante/${estudianteId}`);
   }
+
+  // === MÓDULO DE HISTORIAL DE TRANSCRIPCIONES === //
+
+  obtenerTodosLosHistoriales(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:3000/api/historial');
+  }
+
+  guardarHistorialClase(datos: any): Observable<any> {
+    return this.http.post<any>('http://localhost:3000/api/historial', datos);
+  }
+
+  obtenerHistorialesPorCurso(cursoId: string): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:3000/api/historial/curso/${cursoId}`);
+  }
+
+  obtenerHistorialesPorProfesor(profesorId: string): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:3000/api/historial/profesor/${profesorId}`);
+  }
 }

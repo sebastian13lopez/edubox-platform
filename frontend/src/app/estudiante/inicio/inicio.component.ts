@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CursoService } from '../../services/curso.service';
@@ -18,6 +18,7 @@ export class InicioComponent implements OnInit {
   nombreEstudiante: string = '';
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private router: Router,
     private cursoService: CursoService,
     private authService: AuthService
@@ -34,20 +35,23 @@ export class InicioComponent implements OnInit {
         next: (cursos: any) => {
           this.misCursos = cursos;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
         error: (err: any) => {
           console.error('Error al cargar cursos asignados', err);
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
       this.isLoading = false;
+      this.cdr.detectChanges();
     }
   }
 
   entrarAulaVirtual(curso: any): void {
     // Guardamos la información del curso seleccionado para que el componente "AulaEnVivo" lo recoja
-    localStorage.setItem('cursoActual', JSON.stringify({
+    localStorage.setItem('claseActual', JSON.stringify({
       id: curso._id,
       nombre: curso.nombre,
       profesor: curso.profesor_id?.nombre || 'Profesor Designado'

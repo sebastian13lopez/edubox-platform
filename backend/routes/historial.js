@@ -1,0 +1,67 @@
+const express = require('express');
+const router = express.Router();
+const Historial = require('../models/Historial');
+
+// Guardar historial de una sesión de clase
+router.post('/', async (req, res) => {
+  try {
+    const { curso_id, profesor_id, textoCompleto, participantes } = req.body;
+    
+    const nuevoHistorial = new Historial({
+      curso_id,
+      profesor_id,
+      textoCompleto,
+      participantes: participantes || [],
+      estadisticas: {
+        palabras: textoCompleto ? textoCompleto.split(' ').length : 0
+      }
+    });
+
+    await nuevoHistorial.save();
+    res.status(201).json(nuevoHistorial);
+  } catch (err) {
+    console.error('Error guardando historial de transcripcion:', err);
+    res.status(500).json({ error: 'Error guardando historial', detalle: err.message });
+  }
+});
+
+// Obtener historiales de un curso específico
+router.get('/curso/:cursoId', async (req, res) => {
+  try {
+    const historiales = await Historial.find({ curso_id: req.params.cursoId })
+                                     .populate('profesor_id', 'nombre')
+                                     .sort({ fecha: -1 });
+    res.json(historiales);
+  } catch (err) {
+    console.error('Error obteniendo historial:', err);
+    res.status(500).json({ error: 'Error obteniendo historial' });
+  }
+});
+
+// Obtener historiales de un profesor específico
+router.get('/profesor/:profesorId', async (req, res) => {
+  try {
+    const historiales = await Historial.find({ profesor_id: req.params.profesorId })
+                                     .populate('curso_id', 'nombre')
+                                     .sort({ fecha: -1 });
+    res.json(historiales);
+  } catch (err) {
+    console.error('Error obteniendo historial del profesor:', err);
+    res.status(500).json({ error: 'Error obteniendo historial' });
+  }
+});
+
+// Obtener TODOS los historiales (para el administrador)
+router.get('/', async (req, res) => {
+  try {
+    const historiales = await Historial.find()
+                                     .populate('profesor_id', 'nombre email')
+                                     .populate('curso_id', 'nombre')
+                                     .sort({ fecha: -1 });
+    res.json(historiales);
+  } catch (err) {
+    res.status(500).json({ error: 'Error obteniendo todos los historiales' });
+  }
+});
+
+module.exports = router;

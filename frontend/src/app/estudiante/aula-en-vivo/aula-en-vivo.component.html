@@ -62,30 +62,44 @@
               </div>
             </div>
 
-            <div class="flex-1 mx-6 mb-2 bg-[#F9FAFB] rounded-2xl border border-slate-100 p-6 flex flex-col overflow-hidden relative">
-              <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-200">
-                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <svg class="w-4 h-4 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    Pizarra de {{ claseActual?.profesor || 'Docente' }}
-                 </span>
-                 <span class="text-xs font-bold text-[#2563EB] bg-blue-50 px-2 py-1 rounded border border-blue-100" *ngIf="finalText">{{ finalText.split(' ').length }} palabras</span>
-              </div>
-              
-              <div class="flex-1 overflow-y-auto text-[#111827] text-lg leading-relaxed font-medium pb-10">
-                <span *ngIf="isRecording" class="inline-block w-0.5 h-5 bg-[#7C3AED] animate-pulse mr-1 align-middle"></span>
-                <span>{{ finalText }}</span>
-                <span class="text-[#7C3AED] opacity-80" *ngIf="interimText"> {{ interimText }}</span>
-                
-                <span class="text-slate-400 italic font-normal" *ngIf="!finalText && !interimText && !isRecording">Esperando que el profesor inicie el dictado...</span>
-                <span class="text-[#7C3AED] italic font-normal" *ngIf="!finalText && !interimText && isRecording">Escuchando con IA...</span>
+            <!-- LA GRAN PANTALLA TELEPROMPTER ESTUDIANTE -->
+            <div
+              class="flex-1 mx-6 mb-6 bg-[#0F172A] rounded-3xl border-2 border-slate-800/80 p-8 flex flex-col overflow-y-auto relative shadow-[inset_0_4px_24px_rgba(0,0,0,0.5)]"
+              #scrollContainer>
+
+              <ng-container *ngFor="let item of textosRecientes; let i = index; let last = last;">
+                <div
+                  class="text-4xl font-bold tracking-tight leading-tight mb-8 transition-all duration-700 ease-in-out"
+                  [ngClass]="last ? (item.isProcessing ? 'text-indigo-200 drop-shadow-[0_0_12px_rgba(167,139,250,0.4)]' : 'text-white') : 'text-slate-400 font-medium'"
+                  [style.opacity]="textosRecientes.length > 1 ? ((i / (textosRecientes.length - 1)) < 0.6 ? 0.6 : (i / (textosRecientes.length - 1))) : 1"
+                  [style.transform]="textosRecientes.length > 1 ? 'scale(' + (0.97 + (i / (textosRecientes.length - 1)) * 0.03) + ')' : 'scale(1)'">
+                  {{ item.texto }}
+                  <svg *ngIf="item.isProcessing" class="inline w-6 h-6 ml-3 text-indigo-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              </ng-container>
+
+              <div *ngIf="interimText || isRecording"
+                class="text-4xl font-bold tracking-tight leading-tight mt-auto transition-all duration-300 ease-in-out">
+                <!-- Interim (Frase en progreso en vivo) -->
+                <span class="text-[#C4B5FD]" *ngIf="interimText"> {{ interimText }}</span>
+                <!-- Cursor parpadeante -->
+                <span class="text-[#A78BFA] pl-2 animate-pulse" *ngIf="isRecording">|</span>
               </div>
 
-              <!-- Clear Action -->
-              <div class="absolute bottom-6 right-6" *ngIf="finalText">
-                <button class="bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-200 shadow-sm p-2 rounded-xl transition-colors" (click)="voiceService.clear()" title="Limpiar Pizarra">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+              <div class="h-full flex flex-col items-center justify-center text-center opacity-40"
+                *ngIf="!interimText && textosRecientes.length === 0">
+                <svg class="w-16 h-16 text-white mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z">
+                  </path>
+                </svg>
+                <h3 class="text-2xl font-bold text-white">Escuchando la clase</h3>
+                <p class="text-slate-400">Esperando comunicación en vivo con el docente...</p>
               </div>
+
             </div>
           </ng-container>
 
@@ -107,6 +121,20 @@
                <svg class="w-4 h-4 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                Interacción
              </h2>
+          </div>
+
+          <!-- Participantes Activos -->
+          <div class="px-5 py-3 border-b border-slate-100 bg-white">
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+               <span class="w-2 h-2 bg-[#22C55E] rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span> 
+               {{ usuariosActivos.length }} Online
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-200 shadow-sm" *ngFor="let m of usuariosActivos">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="m.rol === 'profesor' ? 'bg-blue-500' : 'bg-[#EF4444]'"></span> 
+                {{ m.nombre }} <span class="text-slate-400 font-medium ml-1" *ngIf="m.rol === 'profesor'">(Profe)</span>
+              </span>
+            </div>
           </div>
 
           <!-- Botones de Acción (Reacciones) -->

@@ -29,6 +29,7 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/cursos', require('./routes/cursos'));
+app.use('/api/historial', require('./routes/historial'));
 
 // Conexión a MongoDB Atlas
 mongoose.connect(process.env.MONGODB_URI)
@@ -84,12 +85,12 @@ io.on('connection', (socket) => {
         });
         await nuevoMensaje.save();
 
-        // Emitimos a toda la sala (incluso al que lo envió para actualizar su pantalla)
-        io.to(cursoId).emit('nuevo-mensaje', {
+        // Emitimos a la sala (sin incluir al remitente, porque él ya aplicó un push local optimista)
+        socket.to(cursoId).emit('nuevo-mensaje', {
             _id: nuevoMensaje._id,
             curso_id: cursoId,
             autor_id: autor_id,
-            nombreAutor: nombreAutor, // Lo enviamos directo para facilitar el frontend
+            autor: nombreAutor, // Frontend usa 'autor', no 'nombreAutor'
             texto: texto,
             createdAt: nuevoMensaje.createdAt
         });
@@ -125,7 +126,19 @@ io.on('connection', (socket) => {
       }
     }
   });
+
+  // 4. Transmisión en Tiempo Real de Voz a Texto
+  socket.on('transmision-texto', ({ cursoId, textos }) => {
+    console.log(`🎙️ Recibiendo textos para el curso ${cursoId}:`, textos.length, 'bloques.');
+    // Rebota los fragmentos transcritos de la IA a toda el aula instantáneamente
+    socket.to(cursoId).emit('actualizacion-transcripcion', textos);
+  });
+
+  socket.on('transmision-interim', ({ cursoId, interimText }) => {
+    socket.to(cursoId).emit('actualizacion-interim', interimText);
+  });
 });
+
 
 // === Iniciar servidor ===
 // ATENCIÓN: Ahora usamos server.listen, no app.listen para acoplar sockets y HTTP API a la vez

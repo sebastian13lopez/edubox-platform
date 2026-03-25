@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Curso } from '../../models/models';
@@ -18,6 +18,7 @@ export class InicioComponent implements OnInit {
   isLoadingCursos = false;
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private router: Router,
     private cursoService: CursoService,
     private authService: AuthService
@@ -32,17 +33,24 @@ export class InicioComponent implements OnInit {
         next: (data: any) => {
           this.cursosAsignados = data;
           this.isLoadingCursos = false;
+          this.cdr.detectChanges();
         },
         error: (err: any) => {
           console.error('Error al cargar cursos asignados', err);
           this.isLoadingCursos = false;
+          this.cdr.detectChanges();
         }
       });
     }
   }
 
-  iniciarClase(cursoColor: string): void {
-    // Navega al aula en vivo al iniciar una clase
+  iniciarClase(curso: any): void {
+    localStorage.setItem('claseActual', JSON.stringify({
+      id: curso._id,
+      nombre: curso.nombre,
+      profesor: curso.profesor_id?.nombre || 'Yo',
+      color: curso.color || '#2563EB'
+    }));
     this.router.navigate(['/profesor/aula-en-vivo']);
   }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth';
 import { CursoService } from '../../services/curso.service';
@@ -9,7 +9,7 @@ import { CursoService } from '../../services/curso.service';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, ReactiveFormsModule], // Importamos ReactiveFormsModule
+  imports: [CommonModule, ReactiveFormsModule], // Importamos ReactiveFormsModule
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
