@@ -11,4 +11,10 @@ const HistorialSchema = new mongoose.Schema({
   fecha: { type: Date, default: Date.now }
 }, { timestamps: true });
 
+// 1. Índice de Texto: Para búsquedas súper rápidas dentro de las transcripciones de la clase
+HistorialSchema.index({ textoCompleto: 'text' });
+
+// 2. Índice Compuesto: Optimiza las consultas que filtran por curso y ordenan por fecha
+HistorialSchema.index({ curso_id: 1, fecha: -1 });
+
 module.exports = mongoose.model('Historial', HistorialSchema);

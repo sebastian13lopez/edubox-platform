@@ -36,7 +36,7 @@ export class VoiceRecognitionService {
   readonly text$ = this.textSubject.asObservable();
 
   // ── Integración con Gemini IA ─────────────────────────────────────────
-  private readonly API_KEY = 'AIzaSyByPajsuCWcIWzQyVnZOwt08h4GYFzn6E0';
+  private readonly API_KEY = 'AIzaSyC6Ok76j4Q-Su4DRvvgWdiADnnmDCDZaxc';
 
   public isProcessingIA = false;
   private processingSubject = new BehaviorSubject<boolean>(false);

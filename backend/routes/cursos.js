@@ -23,6 +23,21 @@ router.post('/', async (req, res) => {
   }
 });
 
+// --- GET /en-vivo (Dashboard de Cursos en Vivo) ---
+router.get('/en-vivo', async (req, res) => {
+  try {
+    // Consulta estricta para disparar el Partial Index de cursos activos
+    const cursosEnVivo = await Course.find({ en_vivo: true })
+      .populate('profesor_id', 'nombre email')
+      .populate('estudiantes', 'nombre email');
+
+    res.json(cursosEnVivo);
+  } catch (error) {
+    console.error('Error al obtener cursos en vivo:', error);
+    res.status(500).json({ mensaje: 'Error obteniendo cursos en vivo' });
+  }
+});
+
 // --- GET / (Obtener todos los cursos) ---
 router.get('/', async (req, res) => {
   try {
@@ -85,4 +100,30 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ mensaje: 'Error crítico del servidor al intentar borrar el curso' });
   }
 });
+// --- POST /:id/material (Agregar material al curso) ---
+router.post('/:id/material', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { titulo, descripcion, url } = req.body;
+    
+    const curso = await Course.findById(id);
+    if (!curso) {
+      return res.status(404).json({ mensaje: 'Curso no encontrado' });
+    }
+
+    curso.materiales.push({
+      titulo,
+      descripcion,
+      url,
+      fecha: new Date()
+    });
+
+    await curso.save();
+    res.status(201).json(curso);
+  } catch (error) {
+    console.error('Error al agregar material al curso:', error);
+    res.status(500).json({ mensaje: 'Error interno al agregar material al curso' });
+  }
+});
+
 module.exports = router;

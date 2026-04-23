@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Curso } from '../../models/models';
 import { CursoService } from '../../services/curso.service';
@@ -8,7 +9,7 @@ import { AuthService } from '../../services/auth';
 @Component({
   selector: 'app-profesor-inicio',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './inicio.component.html',
   styleUrls: ['./inicio.component.scss']
 })
@@ -16,6 +17,15 @@ export class InicioComponent implements OnInit {
 
   cursosAsignados: any[] = [];
   isLoadingCursos = false;
+
+  mostrarModalMaterial = false;
+  cursoSeleccionadoMaterial: string = '';
+  nuevoMaterial = {
+    titulo: '',
+    descripcion: '',
+    url: ''
+  };
+  guardandoMaterial = false;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -52,5 +62,41 @@ export class InicioComponent implements OnInit {
       color: curso.color || '#2563EB'
     }));
     this.router.navigate(['/profesor/aula-en-vivo']);
+  }
+
+  abrirModalMaterial(): void {
+    if (this.cursosAsignados.length > 0) {
+      this.cursoSeleccionadoMaterial = this.cursosAsignados[0]._id;
+    }
+    this.mostrarModalMaterial = true;
+  }
+
+  cerrarModalMaterial(): void {
+    this.mostrarModalMaterial = false;
+    this.nuevoMaterial = { titulo: '', descripcion: '', url: '' };
+    this.cursoSeleccionadoMaterial = '';
+  }
+
+  guardarMaterial(): void {
+    if (!this.cursoSeleccionadoMaterial || !this.nuevoMaterial.titulo) return;
+
+    this.guardandoMaterial = true;
+    this.cursoService.agregarMaterial(this.cursoSeleccionadoMaterial, this.nuevoMaterial).subscribe({
+      next: (cursoActualizado) => {
+        // Actualizar el curso en la lista local
+        const index = this.cursosAsignados.findIndex(c => c._id === cursoActualizado._id);
+        if (index !== -1) {
+          this.cursosAsignados[index] = cursoActualizado;
+        }
+        this.guardandoMaterial = false;
+        this.cerrarModalMaterial();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al guardar material', err);
+        this.guardandoMaterial = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

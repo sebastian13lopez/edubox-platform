@@ -27,6 +27,10 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error(error);
+    // Captura el error de índice único de MongoDB (ej. correo duplicado)
+    if (error.code === 11000) {
+      return res.status(400).json({ mensaje: 'Este correo ya se encuentra registrado' });
+    }
     res.status(500).json({ mensaje: 'Hubo un error en el servidor' });
   }
 });

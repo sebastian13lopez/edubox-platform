@@ -58,4 +58,20 @@ export class InicioComponent implements OnInit {
     }));
     this.router.navigate(['/estudiante/aula-en-vivo']);
   }
+
+  mostrarModalMateriales = false;
+  materialesSeleccionados: any[] = [];
+  cursoSeleccionadoNombre: string = '';
+
+  verMateriales(curso: any): void {
+    this.materialesSeleccionados = curso.materiales || [];
+    this.cursoSeleccionadoNombre = curso.nombre;
+    this.mostrarModalMateriales = true;
+  }
+
+  cerrarModalMateriales(): void {
+    this.mostrarModalMateriales = false;
+    this.materialesSeleccionados = [];
+    this.cursoSeleccionadoNombre = '';
+  }
 }

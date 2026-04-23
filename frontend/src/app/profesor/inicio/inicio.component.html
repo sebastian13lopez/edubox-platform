@@ -7,7 +7,7 @@
         <p class="text-[#6B7280] font-medium mt-1">Garantiza el éxito de tus alumnos gestionando tus clases.</p>
       </div>
       <div class="flex items-center gap-3">
-        <button class="bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl px-5 py-2.5 text-sm font-bold transition-all flex items-center gap-2 shadow-sm active:scale-95">
+        <button (click)="abrirModalMaterial()" class="bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl px-5 py-2.5 text-sm font-bold transition-all flex items-center gap-2 shadow-sm active:scale-95">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
           Nuevo Material
         </button>
@@ -63,5 +63,54 @@
         </div>
       </ng-template>
     </ng-container>
+  </div>
+</div>
+
+<!-- Modal Nuevo Material -->
+<div *ngIf="mostrarModalMaterial" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm transition-opacity">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+      <h3 class="text-lg font-bold text-gray-900">Añadir Nuevo Material</h3>
+      <button (click)="cerrarModalMaterial()" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    
+    <!-- Body -->
+    <div class="p-6 pb-2 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Curso</label>
+        <select [(ngModel)]="cursoSeleccionadoMaterial" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2.5 px-3 border outline-none text-gray-900 text-sm">
+          <option *ngFor="let curso of cursosAsignados" [value]="curso._id">{{ curso.nombre }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Título del Material</label>
+        <input type="text" [(ngModel)]="nuevoMaterial.titulo" placeholder="Ej. Diapositivas Clase 1" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2 px-3 border outline-none text-gray-900 text-sm">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción (Opcional)</label>
+        <textarea [(ngModel)]="nuevoMaterial.descripcion" placeholder="Instrucciones adicionales..." rows="2" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2 px-3 border outline-none text-gray-900 text-sm resize-none"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Enlace / URL (Opcional)</label>
+        <input type="url" [(ngModel)]="nuevoMaterial.url" placeholder="https://drive.google.com/..." class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 py-2 px-3 border outline-none text-gray-900 text-sm">
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+      <button (click)="cerrarModalMaterial()" class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-300 bg-white">
+        Cancelar
+      </button>
+      <button (click)="guardarMaterial()" [disabled]="!cursoSeleccionadoMaterial || !nuevoMaterial.titulo || guardandoMaterial" class="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
+        <svg *ngIf="guardandoMaterial" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>{{ guardandoMaterial ? 'Guardando...' : 'Guardar Material' }}</span>
+      </button>
+    </div>
   </div>
 </div>

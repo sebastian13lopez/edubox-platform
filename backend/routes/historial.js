@@ -28,7 +28,15 @@ router.post('/', async (req, res) => {
 // Obtener historiales de un curso específico
 router.get('/curso/:cursoId', async (req, res) => {
   try {
-    const historiales = await Historial.find({ curso_id: req.params.cursoId })
+    let query = { curso_id: req.params.cursoId };
+    
+    // Búsqueda por Texto (Índice Text)
+    if (req.query.buscar) {
+      query.$text = { $search: req.query.buscar };
+    }
+
+    // Carga Eficiente (Índice Compuesto): Filtrado por curso y sort por fecha
+    const historiales = await Historial.find(query)
                                      .populate('profesor_id', 'nombre')
                                      .sort({ fecha: -1 });
     res.json(historiales);
@@ -41,7 +49,11 @@ router.get('/curso/:cursoId', async (req, res) => {
 // Obtener historiales de un profesor específico
 router.get('/profesor/:profesorId', async (req, res) => {
   try {
-    const historiales = await Historial.find({ profesor_id: req.params.profesorId })
+    let query = { profesor_id: req.params.profesorId };
+    if (req.query.buscar) {
+      query.$text = { $search: req.query.buscar };
+    }
+    const historiales = await Historial.find(query)
                                      .populate('curso_id', 'nombre')
                                      .sort({ fecha: -1 });
     res.json(historiales);
@@ -54,7 +66,11 @@ router.get('/profesor/:profesorId', async (req, res) => {
 // Obtener TODOS los historiales (para el administrador)
 router.get('/', async (req, res) => {
   try {
-    const historiales = await Historial.find()
+    let query = {};
+    if (req.query.buscar) {
+      query.$text = { $search: req.query.buscar };
+    }
+    const historiales = await Historial.find(query)
                                      .populate('profesor_id', 'nombre email')
                                      .populate('curso_id', 'nombre')
                                      .sort({ fecha: -1 });

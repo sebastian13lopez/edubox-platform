@@ -4,6 +4,14 @@
 //  Úsalas en los componentes con:  import { ... } from '../models/models';
 // ═══════════════════════════════════════════════════════════════════
 
+export interface Material {
+  _id?: string;
+  titulo: string;
+  descripcion?: string;
+  url?: string;
+  fecha?: string;
+}
+
 // ─── Profesor: Curso asignado ───────────────────────────────────────
 export interface Curso {
   id: number;
@@ -11,6 +19,7 @@ export interface Curso {
   horario: string;
   alumnos: number;
   color: string;         // Hex, usado como acento visual de la tarjeta
+  materiales?: Material[];
 }
 
 // ─── Compartida: Registro de clase pasada (tabla de historial) ──────

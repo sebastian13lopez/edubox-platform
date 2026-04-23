@@ -26,6 +26,10 @@ export class CursoService {
     return this.http.get<any[]>(`${this.apiUrl}/estudiante/${estudianteId}`);
   }
 
+  agregarMaterial(cursoId: string, materialData: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${cursoId}/material`, materialData);
+  }
+
   // === MÓDULO DE HISTORIAL DE TRANSCRIPCIONES === //
 
   obtenerTodosLosHistoriales(): Observable<any[]> {
