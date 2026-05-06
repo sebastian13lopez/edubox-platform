@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // Para capturar lo que escribes
-import { AuthService } from '../../services/auth'; // Nuestro mensajero
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -18,6 +18,7 @@ export class Login {
   };
 
   showPassword = false;
+  cargando = false;
 
   constructor(
     private authService: AuthService,
@@ -29,32 +30,50 @@ export class Login {
   }
 
   onLogin() {
+    this.cargando = true;
+
     this.authService.login(this.datos).subscribe({
       next: (res) => {
-        // Guardar el token usando el servicio
-        const token = res.token || 'dummy-token'; 
-        const rol = res.rol || 'Estudiante'; // Default safety fallback
+        // 1. Guardar el token y datos de sesión
+        const token  = res.token  || 'dummy-token';
+        const rol    = res.rol    || 'estudiante';
         const nombre = res.nombre || 'Usuario';
         const correo = this.datos.correo || '';
-        const id = res.id || '';
+        const id     = res.id    || '';
         const estado = res.estado || '';
         this.authService.guardarToken(token, rol, nombre, correo, id, estado);
 
-        // Redirigir dependiendo del Rol (estandarizado a minúsculas para coincidir con backend)
-        const rolNormalize = rol.toLowerCase();
-        
-        if (rolNormalize === 'admin' || rolNormalize === 'administrador') {
+        // 2. Capturar geolocalización en segundo plano (no bloquea el login)
+        //    Al obtener las coordenadas se actualiza el índice 2DSphere en MongoDB.
+        if (id) {
+          this.authService.obtenerUbicacion()
+            .then(({ latitud, longitud }) => {
+              this.authService.actualizarUbicacion(id, latitud, longitud).subscribe({
+                next: () => console.log(`📍 Ubicación registrada: [${latitud}, ${longitud}]`),
+                error: (e: any) => console.warn('No se pudo guardar la ubicación:', e.message)
+              });
+            })
+            .catch(() => {
+              // El usuario rechazó el permiso — el login continúa igualmente
+              console.warn('📍 Ubicación no disponible, se continúa sin ella.');
+            });
+        }
+
+        // 3. Redirigir según el rol
+        this.cargando = false;
+        const rolNorm = rol.toLowerCase();
+        if (rolNorm === 'admin' || rolNorm === 'administrador') {
           this.router.navigate(['/admin']);
-        } else if (rolNormalize === 'profesor') {
+        } else if (rolNorm === 'profesor') {
           this.router.navigate(['/profesor']);
-        } else if (rolNormalize === 'estudiante') {
+        } else if (rolNorm === 'estudiante') {
           this.router.navigate(['/estudiante']);
         } else {
-          // Fallback en caso de otro rol
           alert(`¡Hola ${res.nombre}! Iniciaste sesión como ${rol}.`);
         }
       },
       error: (err) => {
+        this.cargando = false;
         const msg = err.error?.mensaje || 'Error de credenciales';
         alert('Error: ' + msg);
       }

@@ -35,9 +35,6 @@ export class VoiceRecognitionService {
   private textSubject = new BehaviorSubject<string>('');
   readonly text$ = this.textSubject.asObservable();
 
-  // ── Integración con Gemini IA ─────────────────────────────────────────
-  private readonly API_KEY = 'AIzaSyC6Ok76j4Q-Su4DRvvgWdiADnnmDCDZaxc';
-
   public isProcessingIA = false;
   private processingSubject = new BehaviorSubject<boolean>(false);
   readonly isProcessingIA$ = this.processingSubject.asObservable();
@@ -164,37 +161,42 @@ export class VoiceRecognitionService {
 
     this.recognition.onerror = (event: any) => {
       const err = event.error as string;
-      console.error('[Eduvox Voice] Error:', err);
+      console.warn('[Eduvox Voice] Error de reconocimiento:', err);
 
-      const fatal = ['not-allowed', 'service-not-allowed', 'network', 'no-speech'];
+      // Solo son errores fatales los que requieren interacción del usuario
+      const fatal = ['not-allowed', 'service-not-allowed'];
+
       if (fatal.includes(err)) {
         this.hasError = true;
         this.isStoppedByUser = true;
-
         this.zone.run(() => {
           this.activeSubject.next(false);
           const messages: Record<string, string> = {
             'not-allowed': 'Permiso de micrófono denegado.',
             'service-not-allowed': 'El servicio de voz no está permitido.',
-            'network': 'Sin conexión a internet.',
-            'no-speech': 'No se detectó voz. Habla más cerca del micrófono.',
           };
           this.errorSubject.next(messages[err] ?? `Error de voz: ${err}`);
         });
       }
+      // 'no-speech', 'network', 'aborted' -> no fatales, el onend los reanudará
     };
 
     this.recognition.onend = () => {
       this.isListening = false;
       this.zone.run(() => this.activeSubject.next(false));
 
-      // Reanudación automatizada de Chrome si mató el hilo de fondo
+      // Reiniciar automáticamente si no fue el usuario quien detuvo
       if (!this.isStoppedByUser && !this.hasError) {
-        try {
-          this.recognition.start();
-          this.isListening = true;
-          this.zone.run(() => this.activeSubject.next(true));
-        } catch (_) { }
+        // Pequeña espera para evitar bucle rápido en Chrome
+        setTimeout(() => {
+          if (!this.isStoppedByUser && !this.hasError) {
+            try {
+              this.recognition.start();
+              this.isListening = true;
+              this.zone.run(() => this.activeSubject.next(true));
+            } catch (_) { }
+          }
+        }, 300);
       }
     };
   }
@@ -207,33 +209,24 @@ export class VoiceRecognitionService {
     this.isProcessingIA = true;
     this.processingSubject.next(true);
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.API_KEY}`;
+    const url = `http://localhost:3000/api/analitica/corregir-ortografia`;
 
-    // Prompt estricto del sistema para Gemini
-    const prompt = `Actúa como un corrector ortográfico. Corrige la ortografía y agrega signos de puntuación al siguiente texto. NO agregues comentarios, NO cambies las palabras originales, NO respondas a preguntas, solo devuelve el texto corregido.\n\nTexto: ${textoBruto}`;
-
-    const body = {
-      contents: [{
-        parts: [{ text: prompt }]
-      }]
-    };
-
-    this.http.post<any>(url, body).subscribe({
+    this.http.post<any>(url, { texto: textoBruto }).subscribe({
       next: (response) => {
         try {
-          const textoCorregido = response.candidates[0].content.parts[0].text.trim();
+          const textoCorregido = response.textoCorregido;
           this.zone.run(() => {
             this.reemplazarTextoCorregido(id, textoCorregido);
             this.isProcessingIA = false;
             this.processingSubject.next(false);
           });
         } catch (error) {
-          console.error('[Eduvox Voice] Error parseando IA:', error);
+          console.error('[Eduvox Voice] Error procesando corrección:', error);
           this.fallbackToRawText(id, textoBruto);
         }
       },
       error: (err) => {
-        console.warn('[Eduvox Voice] Advertencia/Error de Gemini (posible 429 Too Many Requests):', err);
+        console.warn('[Eduvox Voice] Advertencia/Error de servidor backend al corregir ortografía:', err);
         this.fallbackToRawText(id, textoBruto);
       }
     });

@@ -33,6 +33,9 @@ app.use('/api/auth', require('./routes/auth'));           // Manejo de JWT (Logi
 app.use('/api/usuarios', require('./routes/usuarios'));   // CRUD Usuarios
 app.use('/api/cursos', require('./routes/cursos'));       // CRUD Cursos
 app.use('/api/historial', require('./routes/historial')); // Guardado de la transcripción IA
+app.use('/api/analitica', require('./routes/analitica')); // Learning Analytics y Gamificación
+app.use('/api/agregaciones', require('./routes/agregaciones')); // 8 Etapas del Aggregation Pipeline (Parcial 2)
+app.use('/api/operadores', require('./routes/operadores'));     // Operadores de comparación y lógicos (Parcial 2)
 
 // ==========================================
 // 2. CONEXIÓN A MONGODB (La Despensa)
@@ -47,6 +50,13 @@ app.get('/', (req, res) => {
   res.send('API de Voxera funcionando correctamente.');
 });
 
+// Endpoint para consultar usuarios activos en vivo (para el dashboard del estudiante)
+app.get('/api/cursos/:id/activos', (req, res) => {
+  const cursoId = req.params.id;
+  const usuariosSala = usuariosPorClase.get(cursoId) || [];
+  res.json(usuariosSala);
+});
+
 // ==========================================
 // 3. LÓGICA DE WEBSOCKETS (Chat y Presencia Real-Time)
 // ==========================================
@@ -54,6 +64,9 @@ app.get('/', (req, res) => {
 
 // Registro temporal en memoria RAM: { cursoId: [ { socketId, idUsuario, nombre, rol }, ... ] }
 const usuariosPorClase = new Map();
+
+// Registro de confusiones: { cursoId: [{ timestamp, estudianteId }] }
+const confusionPorClase = new Map();
 
 io.on('connection', (socket) => {
   console.log('🔌 Nuevo cliente conectado (Túnel TCP Abierto):', socket.id);
@@ -146,6 +159,60 @@ io.on('connection', (socket) => {
 
   socket.on('transmision-interim', ({ cursoId, interimText }) => {
     socket.to(cursoId).emit('actualizacion-interim', interimText);
+  });
+
+  // 5. Gamificación: Lanzar Quiz Flash
+  socket.on('lanzar-quiz-flash', ({ cursoId, quizData }) => {
+    console.log(`⚡ Lanzando Quiz Flash para el curso ${cursoId}`);
+    socket.to(cursoId).emit('nuevo-quiz-flash', quizData);
+  });
+
+  // 6. Gamificación: Resultado de respuesta de estudiante → Profesor
+  socket.on('respuesta-quiz', ({ cursoId, nombreEstudiante, esCorrecta, respuestaElegida, racha }) => {
+    console.log(`📝 Respuesta de quiz de ${nombreEstudiante} en curso ${cursoId}: ${esCorrecta ? 'CORRECTA' : 'INCORRECTA'} | Racha: ${racha || 0}`);
+    io.to(cursoId).emit('resultado-quiz-estudiante', { nombreEstudiante, esCorrecta, respuestaElegida, racha: racha || 0, timestamp: new Date() });
+  });
+
+  // 7. Botón de Confusión Anónima
+  socket.on('estudiante-confundido', ({ cursoId, estudianteId }) => {
+    const ahora = Date.now();
+    const dosMinutos = 2 * 60 * 1000;
+
+    if (!confusionPorClase.has(cursoId)) {
+      confusionPorClase.set(cursoId, []);
+    }
+
+    let confusion = confusionPorClase.get(cursoId);
+    // Limpiar eventos antiguos (> 2 min)
+    confusion = confusion.filter(c => ahora - c.timestamp < dosMinutos);
+    // Evitar doble click del mismo estudiante en 30s
+    const yaMarcado = confusion.find(c => c.estudianteId === estudianteId && ahora - c.timestamp < 30000);
+    if (!yaMarcado) {
+      confusion.push({ timestamp: ahora, estudianteId, minuto: Math.floor((ahora / 1000) / 60) });
+    }
+    confusionPorClase.set(cursoId, confusion);
+
+    const estudiantesEnSala = (usuariosPorClase.get(cursoId) || []).filter(u => u.rol !== 'profesor').length || 1;
+    const porcentaje = Math.round((confusion.length / estudiantesEnSala) * 100);
+
+    console.log(`😕 Confusión en ${cursoId}: ${confusion.length}/${estudiantesEnSala} = ${porcentaje}%`);
+
+    // Emitir estado de confusión a todos (profesor y estudiantes)
+    io.to(cursoId).emit('estado-confusion', {
+      cantidad: confusion.length,
+      total: estudiantesEnSala,
+      porcentaje
+    });
+
+    // Emitir SIEMPRE alerta al profesor cuando alguien se confunde (umbral bajo para pruebas)
+    if (porcentaje >= 1) {
+      io.to(cursoId).emit('alerta-confusion', {
+        porcentaje,
+        cantidad: confusion.length,
+        total: estudiantesEnSala,
+        timestamp: new Date()
+      });
+    }
   });
 });
 

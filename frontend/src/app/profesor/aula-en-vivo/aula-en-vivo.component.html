@@ -50,6 +50,13 @@
 
           <div class="flex flex-wrap items-center justify-end gap-3 w-full sm:w-auto">
             <button
+              class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-2.5 text-sm font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
+              (click)="lanzarQuizGemini()" [disabled]="!claseIniciada || isGeneratingQuiz">
+              <svg *ngIf="isGeneratingQuiz" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <svg *ngIf="!isGeneratingQuiz" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
+              {{ isGeneratingQuiz ? 'Generando...' : 'Quiz Relámpago' }}
+            </button>
+            <button
               class="bg-[#22C55E] hover:bg-green-600 text-white rounded-xl px-5 py-2.5 text-sm font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2"
               (click)="iniciarClase()" [disabled]="claseIniciada && !clasePausada">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path></svg>
@@ -205,59 +212,408 @@
         </div>
       </div>
 
-      <!-- ASIDE: INTERACCIÓN Y CHAT -->
-      <div class="lg:col-span-1 flex flex-col gap-6">
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[700px] overflow-hidden">
-          
-          <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-             <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-               <svg class="w-4 h-4 text-[#F59E0B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-               Interacción
-             </h2>
+      <!-- ASIDE: PANEL DE CONTROL CON TABS -->
+      <div class="lg:col-span-1 flex flex-col gap-4">
+
+        <!-- Mini Stats Siempre Visibles -->
+        <div class="grid grid-cols-2 gap-3" *ngIf="statsClase">
+          <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 text-white shadow-md">
+            <p class="text-2xl font-black">{{ estudiantesConectados }}</p>
+            <p class="text-blue-200 text-[10px] font-bold uppercase tracking-widest mt-0.5">Estudiantes</p>
+          </div>
+          <div class="bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-4 text-white shadow-md">
+            <p class="text-2xl font-black">{{ statsClase.avgScore }}%</p>
+            <p class="text-green-200 text-[10px] font-bold uppercase tracking-widest mt-0.5">Score Prom.</p>
+          </div>
+          <div class="rounded-2xl p-4 text-white shadow-md"
+               [ngClass]="statsClase.enRiesgo > 0 ? 'bg-gradient-to-br from-red-500 to-red-600' : 'bg-gradient-to-br from-slate-400 to-slate-500'">
+            <p class="text-2xl font-black">{{ statsClase.enRiesgo }}</p>
+            <p class="text-red-200 text-[10px] font-bold uppercase tracking-widest mt-0.5">En Riesgo</p>
+          </div>
+          <div class="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-4 text-white shadow-md">
+            <p class="text-2xl font-black">{{ statsClase.totalQuizes }}</p>
+            <p class="text-purple-200 text-[10px] font-bold uppercase tracking-widest mt-0.5">Quizes ✓</p>
+          </div>
+        </div>
+
+        <!-- Panel con Tabs -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col overflow-hidden" [style.height]="statsClase ? '520px' : '700px'">
+
+          <!-- Tab Bar -->
+          <div class="flex border-b border-slate-100 bg-slate-50/60">
+            <button (click)="tabPanel = 'chat'"
+                    class="flex-1 py-3.5 text-xs font-black uppercase tracking-widest transition-all border-b-2"
+                    [ngClass]="tabPanel === 'chat' ? 'text-blue-600 border-blue-500 bg-white' : 'text-slate-400 border-transparent hover:text-slate-600'">
+              <svg class="w-4 h-4 inline-block -mt-1 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> Chat
+            </button>
+            <button (click)="tabPanel = 'analitica'"
+                    class="flex-1 py-3.5 text-xs font-black uppercase tracking-widest transition-all border-b-2"
+                    [ngClass]="tabPanel === 'analitica' ? 'text-indigo-600 border-indigo-500 bg-white' : 'text-slate-400 border-transparent hover:text-slate-600'">
+              <svg class="w-4 h-4 inline-block -mt-1 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> Atención
+            </button>
+            <button (click)="tabPanel = 'ranking'"
+                    class="flex-1 py-3.5 text-xs font-black uppercase tracking-widest transition-all border-b-2"
+                    [ngClass]="tabPanel === 'ranking' ? 'text-amber-600 border-amber-500 bg-white' : 'text-slate-400 border-transparent hover:text-slate-600'">
+              <svg class="w-4 h-4 inline-block -mt-1 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg> Ranking
+            </button>
           </div>
 
-          <!-- Participantes Activos -->
-          <div class="px-5 py-3 border-b border-slate-100 bg-white">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-               <span class="w-2 h-2 bg-[#22C55E] rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span> 
-               {{ usuariosActivos.length }} Online
-            </h3>
-            <div class="flex flex-wrap gap-2">
-              <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-200 shadow-sm" *ngFor="let m of usuariosActivos">
-                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="m.rol === 'profesor' ? 'bg-blue-500' : 'bg-[#EF4444]'"></span> 
-                {{ m.nombre }} <span class="text-slate-400 font-medium ml-1" *ngIf="m.rol === 'profesor'">(Profe)</span>
-              </span>
-            </div>
-          </div>
+          <!-- ===== TAB: CHAT ===== -->
+          <ng-container *ngIf="tabPanel === 'chat'">
 
-          <!-- Chat Área -->
-          <div class="flex-1 p-5 overflow-y-auto bg-white flex flex-col gap-4">
-            <div *ngFor="let msg of mensajesChat" class="flex flex-col w-full max-w-[85%]" [ngClass]="msg.esMio ? 'self-end items-end' : 'self-start items-start'">
-               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 mx-1">{{ msg.esMio ? 'Tú' : msg.autor }} <span class="text-slate-300 font-normal ml-0.5">{{ msg.hora }}</span></span>
-               <div class="px-4 py-2.5 rounded-2xl text-sm font-medium break-words shadow-sm border border-transparent" [ngClass]="msg.esMio ? 'bg-[#2563EB] text-white rounded-br-none' : 'bg-slate-100 text-[#111827] rounded-bl-none border-slate-200'">
-                 {{ msg.texto }}
-               </div>
+            <!-- Participantes Online -->
+            <div class="px-4 py-2.5 border-b border-slate-100 bg-slate-50/40">
+              <div class="flex items-center gap-1.5 mb-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_6px_rgba(34,197,94,0.6)]"></span>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  {{ usuariosActivos.length }} conectado{{ usuariosActivos.length !== 1 ? 's' : '' }}
+                  <span class="text-slate-300 font-normal">· {{ estudiantesConectados }} estudiante{{ estudiantesConectados !== 1 ? 's' : '' }}</span>
+                </span>
+                <div *ngIf="ultimaActualizacion" class="ml-auto flex items-center gap-1 text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100">
+                  <span class="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span>
+                  {{ ultimaActualizacion | date:'HH:mm' }}
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <span *ngFor="let m of usuariosActivos"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold border shadow-sm"
+                      [ngClass]="m.rol === 'profesor' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-slate-50 text-slate-600 border-slate-200'">
+                  <span class="w-1.5 h-1.5 rounded-full" [ngClass]="m.rol === 'profesor' ? 'bg-blue-500' : 'bg-red-400'"></span>
+                  {{ m.nombre }}
+                </span>
+              </div>
             </div>
-            
-            <div class="h-full flex flex-col items-center justify-center opacity-60 text-center px-4" *ngIf="mensajesChat.length === 0">
-              <svg class="w-10 h-10 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mesa de clase sin mensajes</p>
-            </div>
-          </div>
 
-          <!-- Input Docente -->
-          <div class="p-4 border-t border-slate-100 bg-[#F9FAFB]">
-            <div class="relative flex items-center bg-white rounded-2xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-[#2563EB] focus-within:border-[#2563EB] transition-all">
-              <input #preguntaInput type="text" class="flex-1 bg-transparent py-3 pl-4 pr-12 outline-none text-sm font-medium text-[#111827] placeholder-slate-400" placeholder="Escribe un anuncio..." (keyup.enter)="enviarMensaje(preguntaInput.value); preguntaInput.value = ''" [disabled]="!claseIniciada"/>
-              <button class="absolute right-1 text-white bg-[#2563EB] hover:bg-blue-700 disabled:opacity-50 h-9 w-9 rounded-xl flex items-center justify-center transition-colors active:scale-95" (click)="enviarMensaje(preguntaInput.value); preguntaInput.value = ''" [disabled]="!claseIniciada">
-                <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-              </button>
+            <!-- Respuestas Quiz -->
+            <div class="px-4 py-2.5 border-b border-indigo-100 bg-indigo-50/40" *ngIf="mostrarResultadosQuiz">
+              <div class="flex items-center gap-1.5 mb-2">
+                <svg class="w-4 h-4 text-indigo-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
+                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Respuestas Quiz</span>
+                <button (click)="resultadosQuizEnVivo = []; mostrarResultadosQuiz = false" class="ml-auto text-[9px] text-slate-400 hover:text-red-400 font-bold flex items-center"><svg class="w-3 h-3 inline-block mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Limpiar</button>
+              </div>
+              <div class="space-y-1 max-h-28 overflow-y-auto">
+                <div *ngFor="let r of resultadosQuizEnVivo"
+                     class="flex items-center gap-2 text-[11px] font-semibold rounded-lg px-2 py-1"
+                     [ngClass]="r.esCorrecta ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                  <span class="flex items-center justify-center">
+                    <svg *ngIf="r.esCorrecta" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    <svg *ngIf="!r.esCorrecta" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </span>
+                  <span class="font-bold truncate">{{ r.nombreEstudiante }}</span>
+                  <div *ngIf="(r.racha || 0) >= 2" 
+                       class="ml-auto flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm flex-shrink-0 transition-all duration-300"
+                       [ngClass]="(r.racha || 0) >= 3 ? 'bg-gradient-to-r from-orange-400 to-rose-500 text-white animate-[pulse_2s_ease-in-out_infinite]' : 'bg-orange-100 text-orange-600 border border-orange-200'">
+                    <svg class="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
+                    <span>×{{ r.racha }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+
+            <!-- Mensajes -->
+            <div class="flex-1 p-4 overflow-y-auto flex flex-col gap-3">
+              <div *ngFor="let msg of mensajesChat" class="flex flex-col w-full max-w-[90%]"
+                   [ngClass]="msg.esMio ? 'self-end items-end' : 'self-start items-start'">
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 mx-1">
+                  {{ msg.esMio ? 'Tú' : msg.autor }} <span class="text-slate-300 font-normal">{{ msg.hora }}</span>
+                </span>
+                <div class="px-3 py-2 rounded-2xl text-sm font-medium break-words shadow-sm"
+                     [ngClass]="msg.esMio ? 'bg-[#2563EB] text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'">
+                  {{ msg.texto }}
+                </div>
+              </div>
+              <div class="h-full flex flex-col items-center justify-center opacity-50 text-center" *ngIf="mensajesChat.length === 0">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mesa de clase sin mensajes</p>
+              </div>
+            </div>
+
+            <!-- Input -->
+            <div class="p-3 border-t border-slate-100 bg-slate-50">
+              <div class="relative flex items-center bg-white rounded-xl border border-slate-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+                <input #preguntaInput type="text" class="flex-1 bg-transparent py-2.5 pl-3 pr-10 outline-none text-sm font-medium text-slate-800 placeholder-slate-400" placeholder="Escribe un anuncio..." (keyup.enter)="enviarMensaje(preguntaInput.value); preguntaInput.value = ''" [disabled]="!claseIniciada"/>
+                <button class="absolute right-1 text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 h-8 w-8 rounded-lg flex items-center justify-center transition-colors active:scale-95" (click)="enviarMensaje(preguntaInput.value); preguntaInput.value = ''" [disabled]="!claseIniciada">
+                  <svg class="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ===== TAB: ANALÍTICA (ATENCIÓN) ===== -->
+          <ng-container *ngIf="tabPanel === 'analitica'">
+            <!-- Header de salud general -->
+            <div class="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-blue-50">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Estado de Atención</p>
+                  <p class="text-sm font-bold text-slate-700 mt-0.5">
+                    {{ estudiantesAnalytics.length }} estudiante{{ estudiantesAnalytics.length !== 1 ? 's' : '' }} en sala
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-black"
+                     [ngClass]="statsClase && statsClase.avgScore >= 75 ? 'text-green-600' : statsClase && statsClase.avgScore >= 50 ? 'text-orange-500' : 'text-red-500'">
+                    {{ statsClase?.avgScore || 0 }}%
+                  </p>
+                  <p class="text-[9px] text-slate-400 font-semibold uppercase">Promedio clase</p>
+                </div>
+              </div>
+              <!-- Barra de salud global -->
+              <div class="mt-2 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-700"
+                     [ngClass]="statsClase && statsClase.avgScore >= 75 ? 'bg-green-500' : statsClase && statsClase.avgScore >= 50 ? 'bg-orange-400' : 'bg-red-500'"
+                     [style.width]="(statsClase?.avgScore || 0) + '%'"></div>
+              </div>
+            </div>
+
+            <!-- Lista de estudiantes -->
+            <div class="flex-1 overflow-y-auto divide-y divide-slate-50">
+              <div *ngFor="let est of estudiantesAnalytics"
+                   class="px-4 py-3 hover:bg-slate-50/70 transition-colors">
+                <div class="flex items-center gap-3">
+                  <!-- Avatar con indicador de salud -->
+                  <div class="relative flex-shrink-0">
+                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black text-white"
+                         [ngClass]="est.score >= 75 ? 'bg-green-500' : est.score >= 50 ? 'bg-orange-400' : 'bg-red-500'">
+                      {{ est.nombre.charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
+                          [ngClass]="est.score >= 75 ? 'bg-green-400' : est.score >= 50 ? 'bg-orange-400' : 'bg-red-500'"></span>
+                  </div>
+
+                  <!-- Info principal -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-bold text-slate-800 truncate">{{ est.nombre }}</p>
+                      <span class="text-[10px] px-2 py-0.5 rounded-full font-black ml-2 flex-shrink-0"
+                            [ngClass]="est.estado === 'Estable' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                        {{ est.estado }}
+                      </span>
+                    </div>
+
+                    <!-- Barra de atención -->
+                    <div class="flex items-center gap-2 mt-1.5">
+                      <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-700"
+                             [ngClass]="est.score >= 75 ? 'bg-green-500' : est.score >= 50 ? 'bg-orange-400' : 'bg-red-500'"
+                             [style.width]="est.score + '%'"></div>
+                      </div>
+                      <span class="text-[11px] font-black w-9 text-right"
+                            [ngClass]="est.score >= 75 ? 'text-green-600' : est.score >= 50 ? 'text-orange-500' : 'text-red-500'">
+                        {{ est.score }}%
+                      </span>
+                    </div>
+
+                    <!-- Métricas secundarias -->
+                    <div class="flex items-center gap-3 mt-1">
+                      <span class="flex items-center gap-1 text-[10px] text-slate-400">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        {{ est.focusLostCount }} desconc.
+                      </span>
+                      <span class="flex items-center gap-1 text-[10px] text-slate-400">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {{ est.correctQuizCount }} quiz ✓
+                      </span>
+                      <div *ngIf="(rachasEstudiantes.get(est.nombre) || 0) >= 2" 
+                           class="flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm flex-shrink-0 transition-all duration-300"
+                           [ngClass]="(rachasEstudiantes.get(est.nombre) || 0) >= 3 ? 'bg-gradient-to-r from-orange-400 to-rose-500 text-white animate-[pulse_2s_ease-in-out_infinite]' : 'bg-orange-100 text-orange-600 border border-orange-200'">
+                        <svg class="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
+                        <span>×{{ rachasEstudiantes.get(est.nombre) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="estudiantesAnalytics.length === 0"
+                   class="flex flex-col items-center justify-center py-16 text-center px-6">
+                <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4">
+                  <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                  </svg>
+                </div>
+                <p class="text-slate-500 text-sm font-bold">Sin datos de atención</p>
+                <p class="text-slate-400 text-xs mt-1">Los datos aparecerán cuando los estudiantes participen.</p>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ===== TAB: RANKING ===== -->
+          <ng-container *ngIf="tabPanel === 'ranking'">
+            <!-- Header del ranking -->
+            <div class="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-yellow-50">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest">Tabla de Líderes</p>
+                  <p class="text-sm font-bold text-slate-700 mt-0.5">Basado en quizes correctos</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-black text-amber-600">{{ statsClase?.totalQuizes || 0 }}</p>
+                  <p class="text-[9px] text-slate-400 font-semibold uppercase">Quizes totales</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aviso si no hay quizes -->
+            <div *ngIf="!statsClase || statsClase.totalQuizes === 0"
+                 class="mx-3 mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-2xl px-3 py-3">
+              <span class="text-lg flex items-center justify-center"><svg class="w-6 h-6 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg></span>
+              <div>
+                <p class="text-amber-800 text-xs font-bold">¡Lanza un Quiz Relámpago!</p>
+                <p class="text-amber-600 text-[10px] mt-0.5">El ranking se activa con el primer quiz.</p>
+              </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-2">
+              <div *ngFor="let est of leaderboard; let i = index"
+                   class="flex items-center gap-3 p-3 rounded-2xl border-2 transition-all"
+                   [ngClass]="est.correctQuizCount === 0
+                     ? 'border-slate-100 bg-slate-50/50'
+                     : i === 0 ? 'border-yellow-300 bg-gradient-to-r from-yellow-50 to-amber-50 shadow-sm'
+                     : i === 1 ? 'border-slate-300 bg-gradient-to-r from-slate-50 to-gray-50'
+                     : i === 2 ? 'border-orange-300 bg-gradient-to-r from-orange-50 to-amber-50'
+                     : 'border-slate-100 bg-white'">
+
+                <!-- Posición / Medalla -->
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-base flex-shrink-0"
+                     [ngClass]="est.correctQuizCount === 0 ? 'bg-slate-100 text-slate-300'
+                               : i === 0 ? 'bg-yellow-400 text-white shadow-md shadow-yellow-400/40'
+                               : i === 1 ? 'bg-slate-400 text-white'
+                               : i === 2 ? 'bg-orange-400 text-white shadow-md shadow-orange-400/30'
+                               : 'bg-slate-100 text-slate-500'">
+                  <ng-container *ngIf="est.correctQuizCount === 0">—</ng-container>
+                  <ng-container *ngIf="est.correctQuizCount > 0">
+                    {{ '#'+(i+1) }}
+                  </ng-container>
+                </div>
+
+                <!-- Nombre + stats -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <p class="text-sm font-bold truncate"
+                       [ngClass]="est.correctQuizCount === 0 ? 'text-slate-400' : i === 0 ? 'text-amber-800' : 'text-slate-800'">
+                      {{ est.nombre }}
+                    </p>
+                    <div *ngIf="(rachasEstudiantes.get(est.nombre) || 0) >= 2" 
+                         class="flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm flex-shrink-0 transition-all duration-300"
+                         [ngClass]="(rachasEstudiantes.get(est.nombre) || 0) >= 3 ? 'bg-gradient-to-r from-orange-400 to-rose-500 text-white animate-[pulse_2s_ease-in-out_infinite]' : 'bg-orange-100 text-orange-600 border border-orange-200'">
+                      <svg class="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg>
+                      <span>×{{ rachasEstudiantes.get(est.nombre) }}</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[10px]"
+                          [ngClass]="est.correctQuizCount === 0 ? 'text-slate-400 italic' : 'text-slate-500'">
+                      {{ est.correctQuizCount === 0 ? 'Aún sin responder' : est.correctQuizCount + ' resp. correctas' }}
+                    </span>
+                    <!-- Mini barra de precisión -->
+                    <div *ngIf="est.correctQuizCount > 0" class="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full transition-all duration-700"
+                           [ngClass]="est.score >= 75 ? 'bg-green-500' : est.score >= 50 ? 'bg-orange-400' : 'bg-red-500'"
+                           [style.width]="est.score + '%'"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Score -->
+                <div class="flex-shrink-0 text-right">
+                  <ng-container *ngIf="est.correctQuizCount === 0">
+                    <span class="text-sm font-black text-slate-300">—</span>
+                  </ng-container>
+                  <ng-container *ngIf="est.correctQuizCount > 0">
+                    <p class="text-lg font-black leading-none"
+                       [ngClass]="est.score >= 75 ? 'text-green-600' : est.score >= 50 ? 'text-orange-500' : 'text-red-500'">
+                      {{ est.score }}%
+                    </p>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                          [ngClass]="est.estado === 'Estable' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                      {{ est.estado }}
+                    </span>
+                  </ng-container>
+                </div>
+              </div>
+
+              <div *ngIf="leaderboard.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+                <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-4">
+                  <span class="flex items-center justify-center"><svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg></span>
+                </div>
+                <p class="text-slate-500 text-sm font-bold">Ranking vacío</p>
+                <p class="text-slate-400 text-xs mt-1">Lanza un quiz para activar la clasificación.</p>
+              </div>
+            </div>
+          </ng-container>
 
         </div>
       </div>
       
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Toast Notifications: Posición SUPERIOR CENTRO -->
+<div class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 items-center" aria-live="polite">
+  <div
+    *ngFor="let toast of toasts"
+    class="flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-bold border backdrop-blur-sm transition-all duration-300"
+    [ngClass]="{
+      'bg-green-600 text-white border-green-500 shadow-green-500/30': toast.type === 'success',
+      'bg-red-600 text-white border-red-500 shadow-red-500/30': toast.type === 'error',
+      'bg-slate-900 text-white border-slate-700 shadow-slate-900/30': toast.type === 'info',
+      'bg-orange-500 text-white border-orange-400 shadow-orange-500/30': toast.type === 'warning'
+    }">
+    <span class="flex items-center justify-center">
+      <svg *ngIf="toast.type === 'success'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      <svg *ngIf="toast.type === 'error'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      <svg *ngIf="toast.type === 'warning'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      <svg *ngIf="toast.type === 'info'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    </span>
+    <span class="leading-snug">{{ toast.message }}</span>
+  </div>
+</div>
+
+<!-- ALERTA DE CONFUSIÓN MEJORADA -->
+<div *ngIf="alertaConfusion" class="fixed top-20 left-1/2 -translate-x-1/2 z-[9998] max-w-xl w-full px-4">
+  <div class="rounded-2xl p-5 shadow-2xl border flex flex-col gap-3 animate-[slideDown_0.3s_ease-out]"
+       [ngClass]="alertaConfusion.porcentaje >= 50 
+         ? 'bg-gradient-to-br from-red-600 to-red-700 text-white border-red-400 shadow-red-500/40'
+         : alertaConfusion.porcentaje >= 30 
+           ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white border-orange-400 shadow-orange-500/40'
+           : 'bg-gradient-to-br from-amber-500 to-yellow-500 text-white border-amber-400 shadow-amber-500/40'">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+           [ngClass]="alertaConfusion.porcentaje >= 50 ? 'bg-red-500/40' : alertaConfusion.porcentaje >= 30 ? 'bg-orange-400/40' : 'bg-amber-400/40'">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <p class="font-black text-lg leading-tight">
+          {{ alertaConfusion.porcentaje >= 50 ? '¡Alerta Crítica!' : alertaConfusion.porcentaje >= 30 ? '¡Varios estudiantes se perdieron!' : 'Un estudiante necesita ayuda' }}
+        </p>
+        <p class="text-sm font-medium mt-0.5 opacity-90">
+          {{ alertaConfusion.cantidad }} de {{ alertaConfusion.total }} estudiantes presionaron "Me perdí" en los últimos 2 min.
+        </p>
+      </div>
+      <button (click)="alertaConfusion = null" class="text-white/60 hover:text-white text-2xl font-bold p-1 leading-none flex-shrink-0">×</button>
+    </div>
+    <!-- Sugerencias pedagógicas accionables -->
+    <div class="rounded-xl p-3 flex items-start gap-3"
+         [ngClass]="alertaConfusion.porcentaje >= 50 ? 'bg-red-500/30' : alertaConfusion.porcentaje >= 30 ? 'bg-orange-400/30' : 'bg-amber-400/30'">
+      <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+      </svg>
+      <div class="text-sm font-semibold">
+        <p *ngIf="alertaConfusion.porcentaje >= 50">💡 Sugerencia: Pausa la clase y retoma el último concepto con un ejemplo sencillo. Pregunta abiertamente qué parte no quedó clara.</p>
+        <p *ngIf="alertaConfusion.porcentaje >= 30 && alertaConfusion.porcentaje < 50">💡 Sugerencia: Reformula la última idea con un ejemplo diferente o haz una pregunta al grupo para identificar la confusión.</p>
+        <p *ngIf="alertaConfusion.porcentaje < 30">💡 Sugerencia: Puedes preguntar si alguien tiene dudas o continuar normalmente. Algunos estudiantes podrían necesitar un repaso después.</p>
+      </div>
     </div>
   </div>
 </div>

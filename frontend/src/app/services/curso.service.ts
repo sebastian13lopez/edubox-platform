@@ -44,6 +44,10 @@ export class CursoService {
     return this.http.get<any[]>(`http://localhost:3000/api/historial/curso/${cursoId}`);
   }
 
+  obtenerHistorialesPorEstudiante(estudianteId: string): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:3000/api/historial/estudiante/${estudianteId}`);
+  }
+
   obtenerHistorialesPorProfesor(profesorId: string): Observable<any[]> {
     return this.http.get<any[]>(`http://localhost:3000/api/historial/profesor/${profesorId}`);
   }

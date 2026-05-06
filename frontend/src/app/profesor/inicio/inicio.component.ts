@@ -83,7 +83,6 @@ export class InicioComponent implements OnInit {
     this.guardandoMaterial = true;
     this.cursoService.agregarMaterial(this.cursoSeleccionadoMaterial, this.nuevoMaterial).subscribe({
       next: (cursoActualizado) => {
-        // Actualizar el curso en la lista local
         const index = this.cursosAsignados.findIndex(c => c._id === cursoActualizado._id);
         if (index !== -1) {
           this.cursosAsignados[index] = cursoActualizado;
@@ -99,4 +98,10 @@ export class InicioComponent implements OnInit {
       }
     });
   }
+
+  // Navega al mapa geoespacial de estudiantes (Índice 2DSphere)
+  irAlMapa(): void {
+    this.router.navigate(['/profesor/mapa-estudiantes']);
+  }
 }
+

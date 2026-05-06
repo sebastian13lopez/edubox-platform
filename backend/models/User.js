@@ -37,9 +37,36 @@ const userSchema = new mongoose.Schema({
       // Los profesores recién registrados quedan a la espera del Administrador
       return this.rol === 'profesor' ? 'Pendiente' : 'Activo';
     }
+  },
+
+  // ── Campo para el Índice Geoespacial ──────────────────────────────
+  // Almacena la última ubicación conocida del usuario en formato GeoJSON.
+  // Se actualiza automáticamente cuando el usuario inicia sesión.
+  // coordinates: [longitud, latitud]  ← MongoDB usa este orden (lng, lat)
+  ubicacion: {
+    type: {
+      type: String,
+      enum: ['Point'],   // GeoJSON solo acepta 'Point' para un punto único
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number],    // [longitud, latitud]
+      default: [0, 0]    // Coordenadas por defecto (sin ubicación)
+    }
   }
 }, { 
   timestamps: true // Agrega automáticamente createdAt y updatedAt
 });
+
+// ── ÍNDICE 4 — Geoespacial (2DSphere Index):
+// Permite consultas geoespaciales eficientes sobre el campo 'ubicacion'.
+// Soporta geometrías esféricas (coordenadas reales en la Tierra).
+// Habilita operadores como $near, $geoWithin, $geoIntersects.
+userSchema.index({ ubicacion: '2dsphere' });
+
+// ── ÍNDICE 5 — Simple (Single Field) en rol:
+// Optimiza consultas que filtran usuarios por rol.
+// Ej: User.find({ rol: 'profesor' }) en el panel de administración.
+userSchema.index({ rol: 1 });
 
 module.exports = mongoose.model('User', userSchema);

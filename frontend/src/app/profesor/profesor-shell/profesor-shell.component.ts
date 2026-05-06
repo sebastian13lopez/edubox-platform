@@ -38,6 +38,11 @@ export class ProfesorShellComponent implements OnInit {
       label: 'Mi Perfil',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
     },
+    {
+      path: 'mapa-estudiantes',
+      label: 'Mapa de Estudiantes',
+      icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z'
+    },
   ];
 
   constructor(private authService: AuthService, private router: Router) {}

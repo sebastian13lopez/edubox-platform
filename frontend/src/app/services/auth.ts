@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  // Esta es la dirección de tu "cerebro" (Backend)
   private API_URL = 'http://localhost:3000/api/auth';
+  private USUARIOS_URL = 'http://localhost:3000/api/usuarios';
 
   constructor(private http: HttpClient) { }
 
@@ -21,49 +21,40 @@ export class AuthService {
     return this.http.post(`${this.API_URL}/register`, usuario);
   }
 
-  // --- Novedades para Protección de Rutas ---
-
   // Guardar datos en el navegador del usuario
   guardarToken(token: string, rol: string, nombre: string = 'Usuario', correo: string = '', id: string = '', estado: string = '') {
     localStorage.setItem('auth_token', token);
     localStorage.setItem('auth_rol', rol);
     localStorage.setItem('auth_nombre', nombre);
     localStorage.setItem('auth_correo', correo);
-    if(id) localStorage.setItem('auth_id', id);
-    if(estado) localStorage.setItem('auth_estado', estado);
+    if (id) localStorage.setItem('auth_id', id);
+    if (estado) localStorage.setItem('auth_estado', estado);
   }
 
-  // Obtener id del usuario
   getIdUsuario(): string {
     return localStorage.getItem('auth_id') || '';
   }
 
-  // Obtener nombre del usuario
   getNombreUsuario(): string {
     return localStorage.getItem('auth_nombre') || 'Usuario';
   }
 
-  // Obtener estado del usuario (ej: Pendiente o Aprobado)
   getEstadoUsuario(): string {
     return localStorage.getItem('auth_estado') || '';
   }
 
-  // Obtener correo del usuario
   getCorreoUsuario(): string {
     return localStorage.getItem('auth_correo') || 'correo@ejemplo.com';
   }
 
-  // Comprueba si hay un token guardado (es decir, si "inició sesión")
   estaAutenticado(): boolean {
     return !!localStorage.getItem('auth_token');
   }
 
-  // Obtener el rol actual para permisos
   obtenerRol(): string | null {
     return localStorage.getItem('auth_rol');
   }
 
-  // Borrar los datos al cerrar sesión
   cerrarSesionLocal() {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_rol');
@@ -71,5 +62,47 @@ export class AuthService {
     localStorage.removeItem('auth_correo');
     localStorage.removeItem('auth_id');
     localStorage.removeItem('auth_estado');
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // GEOLOCALIZACIÓN — Índice 2DSphere
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Solicita permiso de geolocalización al navegador.
+   * Se llama justo después de un login exitoso.
+   * Si el usuario rechaza el permiso, el login NO se bloquea.
+   */
+  obtenerUbicacion(): Promise<{ latitud: number; longitud: number }> {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocalización no soportada por este navegador'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          resolve({
+            latitud: pos.coords.latitude,
+            longitud: pos.coords.longitude
+          });
+        },
+        (err) => {
+          console.warn('⚠️ Permiso de ubicación denegado:', err.message);
+          reject(err);
+        },
+        { timeout: 8000, enableHighAccuracy: true }
+      );
+    });
+  }
+
+  /**
+   * Envía las coordenadas al backend para actualizar el campo
+   * 'ubicacion' del usuario (activa el índice 2DSphere).
+   */
+  actualizarUbicacion(usuarioId: string, latitud: number, longitud: number): Observable<any> {
+    return this.http.put(
+      `${this.USUARIOS_URL}/${usuarioId}/ubicacion`,
+      { latitud, longitud }
+    );
   }
 }

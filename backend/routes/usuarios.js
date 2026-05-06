@@ -93,4 +93,91 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ mensaje: 'Error interno al intentar eliminar usuario' });
   }
 });
+
+// ─────────────────────────────────────────────────────────────
+// ÍNDICE GEOESPACIAL (2DSphere) — Endpoints relacionados
+// ─────────────────────────────────────────────────────────────
+
+// --- RUTA: Actualizar ubicación del usuario (llamado al hacer login) ---
+// PUT /api/usuarios/:id/ubicacion
+// Recibe: { latitud: Number, longitud: Number }
+// MongoDB almacena coordenadas como [longitud, latitud] (orden GeoJSON)
+router.put('/:id/ubicacion', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { latitud, longitud } = req.body;
+
+    if (latitud === undefined || longitud === undefined) {
+      return res.status(400).json({ mensaje: 'Se requieren latitud y longitud' });
+    }
+
+    // Actualizar el campo 'ubicacion' con formato GeoJSON Point
+    const usuarioActualizado = await User.findByIdAndUpdate(
+      id,
+      {
+        ubicacion: {
+          type: 'Point',
+          coordinates: [longitud, latitud] // GeoJSON: [lng, lat]
+        }
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!usuarioActualizado) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+
+    console.log(`📍 Ubicación actualizada para ${usuarioActualizado.nombre}: [${longitud}, ${latitud}]`);
+    res.json({
+      mensaje: 'Ubicación actualizada correctamente',
+      usuario: usuarioActualizado.nombre,
+      coordenadas: { latitud, longitud }
+    });
+  } catch (error) {
+    console.error('Error actualizando ubicación:', error);
+    res.status(500).json({ mensaje: 'Error al actualizar la ubicación' });
+  }
+});
+
+// --- RUTA: Obtener estudiantes de un curso con su ubicación ---
+// GET /api/usuarios/curso/:cursoId/ubicaciones
+// Usa $lookup (aggregation) para combinar estudiantes del curso con sus coordenadas.
+// El índice 2DSphere en 'ubicacion' hace esta consulta muy eficiente.
+router.get('/curso/:cursoId/ubicaciones', async (req, res) => {
+  try {
+    const Course = require('../models/Course');
+    const mongoose = require('mongoose');
+
+    // 1. Obtener el curso con la lista de IDs de estudiantes
+    const curso = await Course.findById(req.params.cursoId).select('nombre estudiantes profesor_id');
+    if (!curso) {
+      return res.status(404).json({ mensaje: 'Curso no encontrado' });
+    }
+
+    // 2. Buscar los usuarios correspondientes que tengan ubicación registrada
+    //    Usamos $ne para excluir los que tienen coordenadas predeterminadas [0,0]
+    const estudiantesConUbicacion = await User.find({
+      _id: { $in: curso.estudiantes },
+      'ubicacion.coordinates': { $ne: [0, 0] }  // Operador $ne: excluir sin ubicación
+    }).select('nombre email rol ubicacion');
+
+    res.json({
+      cursoId: req.params.cursoId,
+      nombreCurso: curso.nombre,
+      totalEstudiantes: curso.estudiantes.length,
+      estudiantesConUbicacion: estudiantesConUbicacion.length,
+      estudiantes: estudiantesConUbicacion.map(e => ({
+        id: e._id,
+        nombre: e.nombre,
+        email: e.email,
+        latitud: e.ubicacion.coordinates[1],   // GeoJSON: [lng, lat] → lat es índice 1
+        longitud: e.ubicacion.coordinates[0],  // GeoJSON: [lng, lat] → lng es índice 0
+      }))
+    });
+  } catch (error) {
+    console.error('Error obteniendo ubicaciones:', error);
+    res.status(500).json({ mensaje: 'Error al obtener ubicaciones de estudiantes' });
+  }
+});
+
 module.exports = router;
