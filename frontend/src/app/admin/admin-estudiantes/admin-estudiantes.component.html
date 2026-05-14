@@ -1,0 +1,238 @@
+<div class="max-w-[1600px] mx-auto w-full space-y-8">
+
+  <!-- ── CABECERA ─────────────────────────────────────────────── -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+      <h2 class="text-2xl font-extrabold text-[#111827] tracking-tight">Directorio de Estudiantes</h2>
+      <p class="text-slate-500 text-sm font-medium mt-1">Visualiza y gestiona todos los estudiantes registrados en la plataforma.</p>
+    </div>
+    <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm text-sm font-bold text-slate-700 flex-shrink-0">
+      <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+      </svg>
+      {{ estudiantes.length }} registrados
+    </div>
+  </div>
+
+  <!-- ── ALERTA datos faltantes ───────────────────────────────── -->
+  <div *ngIf="totalSinSexo > 0"
+    class="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3.5 text-amber-800 text-sm font-medium">
+    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+    </svg>
+    <span><strong>{{ totalSinSexo }}</strong> estudiante(s) sin sexo registrado. Usa <strong>Editar</strong> en la tabla para completar la información.</span>
+  </div>
+
+  <!-- ── 4 TARJETAS ESTADÍSTICAS ──────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+    <!-- Total -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-4 flex items-center gap-4">
+      <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 border border-indigo-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <div>
+        <p class="text-2xl font-black text-[#111827] leading-none">{{ estudiantes.length }}</p>
+        <p class="text-xs text-slate-400 font-semibold mt-1">Total Estudiantes</p>
+      </div>
+    </div>
+
+    <!-- Masculino -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-4 flex items-center gap-4">
+      <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 border border-indigo-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      </div>
+      <div>
+        <p class="text-2xl font-black text-indigo-600 leading-none">{{ totalMasculino }}</p>
+        <p class="text-xs text-slate-400 font-semibold mt-1">Masculino</p>
+      </div>
+    </div>
+
+    <!-- Femenino -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-4 flex items-center gap-4">
+      <div class="w-11 h-11 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center flex-shrink-0 border border-pink-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      </div>
+      <div>
+        <p class="text-2xl font-black text-pink-500 leading-none">{{ totalFemenino }}</p>
+        <p class="text-xs text-slate-400 font-semibold mt-1">Femenino</p>
+      </div>
+    </div>
+
+    <!-- Sin datos -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-4 flex items-center gap-4">
+      <div class="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 border"
+        [ngClass]="totalSinSexo > 0 ? 'bg-amber-50 text-amber-500 border-amber-100' : 'bg-emerald-50 text-emerald-500 border-emerald-100'">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <p class="text-2xl font-black leading-none" [ngClass]="totalSinSexo > 0 ? 'text-amber-500' : 'text-emerald-500'">{{ totalSinSexo }}</p>
+        <p class="text-xs text-slate-400 font-semibold mt-1">Sin especificar</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── GRÁFICAS ──────────────────────────────────────────────── -->
+  <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+
+    <!-- DONUT: Distribución por Sexo (2/5) -->
+    <div class="xl:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center gap-3">
+          <div class="bg-pink-50 text-pink-500 w-9 h-9 flex items-center justify-center rounded-xl border border-pink-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-[#111827] text-sm leading-none">Distribución por Sexo</h4>
+            <p class="text-xs text-slate-400 font-medium mt-0.5">Calculado desde la tabla actual</p>
+          </div>
+        </div>
+        <span class="text-[10px] font-black uppercase tracking-widest bg-pink-50 text-pink-500 px-2.5 py-1 rounded-lg border border-pink-100">Donut</span>
+      </div>
+      <div class="flex-1 relative" style="min-height: 250px;">
+        <canvas #chartSexo id="chartSexoEstudiantes"></canvas>
+      </div>
+    </div>
+
+    <!-- COMBO: Línea de Tiempo de Registros (3/5) -->
+    <div class="xl:col-span-3 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center gap-3">
+          <div class="bg-indigo-50 text-indigo-500 w-9 h-9 flex items-center justify-center rounded-xl border border-indigo-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-[#111827] text-sm leading-none">Línea de Tiempo de Registros</h4>
+            <p class="text-xs text-slate-400 font-medium mt-0.5">Últimos 30 días — barras: nuevos · línea: acumulado</p>
+          </div>
+        </div>
+        <span class="text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-500 px-2.5 py-1 rounded-lg border border-indigo-100">30 días</span>
+      </div>
+      <div class="flex-1 relative" style="min-height: 250px;">
+        <canvas #chartTimeline id="chartTimelineEstudiantes"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TABLA ─────────────────────────────────────────────────── -->
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h3 class="font-extrabold text-[#111827] text-base">Listado Completo</h3>
+        <p class="text-slate-400 text-xs font-medium mt-0.5">Editar el sexo actualiza la gráfica de inmediato.</p>
+      </div>
+      <div class="relative w-full sm:w-72">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <input type="text" [(ngModel)]="busqueda" placeholder="Buscar nombre o correo..."
+          class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 outline-none transition-all placeholder:text-slate-400">
+      </div>
+    </div>
+
+    <!-- Spinner -->
+    <div *ngIf="cargando" class="flex items-center justify-center py-20">
+      <div class="flex flex-col items-center gap-3 text-slate-400">
+        <div class="w-8 h-8 rounded-full border-4 border-slate-200 border-t-indigo-500 animate-spin"></div>
+        <span class="text-sm font-medium">Cargando estudiantes...</span>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div *ngIf="!cargando" class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-100">
+            <th class="text-left px-6 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest">Estudiante</th>
+            <th class="text-left px-6 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest hidden md:table-cell">Correo</th>
+            <th class="text-left px-6 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest">Sexo</th>
+            <th class="text-left px-6 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest hidden lg:table-cell">Registrado</th>
+            <th class="text-right px-6 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          <tr *ngFor="let est of estudiantesFiltrados" class="hover:bg-slate-50/70 transition-colors group">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 text-indigo-700 flex items-center justify-center text-sm font-black border border-indigo-200/50 flex-shrink-0">
+                  {{ est.nombre?.charAt(0) | uppercase }}
+                </div>
+                <span class="font-bold text-slate-800">{{ est.nombre }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 hidden md:table-cell text-slate-500 font-medium">{{ est.email }}</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border" [ngClass]="badgeSexo(est.sexo)">
+                {{ est.sexo || 'Sin especificar' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 hidden lg:table-cell text-slate-400 font-medium text-xs">{{ est.createdAt | date:'dd MMM yyyy' }}</td>
+            <td class="px-6 py-4 text-right">
+              <button (click)="abrirModalSexo(est)"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all duration-200 active:scale-95">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Editar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="estudiantesFiltrados.length === 0">
+            <td colspan="5" class="text-center py-16 text-slate-400">
+              <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              <p class="text-sm font-semibold">Sin resultados</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Editar Sexo ────────────────────────────────────── -->
+<div *ngIf="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="cerrarModal()"></div>
+  <div class="relative bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 w-full max-w-md z-10">
+    <button (click)="cerrarModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 text-indigo-700 flex items-center justify-center text-lg font-black border border-indigo-200/50">
+        {{ estudianteEditar?.nombre?.charAt(0) | uppercase }}
+      </div>
+      <div>
+        <h3 class="font-extrabold text-[#111827] text-base leading-tight">{{ estudianteEditar?.nombre }}</h3>
+        <p class="text-slate-400 text-xs font-medium mt-0.5">{{ estudianteEditar?.email }}</p>
+      </div>
+    </div>
+    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Selecciona el sexo</label>
+    <div class="grid grid-cols-2 gap-3 mb-6">
+      <button *ngFor="let opcion of ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir']" type="button"
+        (click)="sexoSeleccionado = opcion"
+        class="px-4 py-3 rounded-xl text-sm font-bold border-2 transition-all duration-150 active:scale-95"
+        [ngClass]="sexoSeleccionado === opcion ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300'">
+        {{ opcion }}
+      </button>
+      <button type="button" (click)="sexoSeleccionado = ''"
+        class="col-span-2 py-2.5 rounded-xl text-xs font-bold border-2 transition-all"
+        [ngClass]="sexoSeleccionado === '' ? 'border-slate-400 bg-slate-100 text-slate-700' : 'border-slate-100 bg-slate-50 text-slate-400'">
+        Sin especificar / Limpiar
+      </button>
+    </div>
+    <div class="flex gap-3">
+      <button (click)="cerrarModal()" class="flex-1 py-3 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors active:scale-95">Cancelar</button>
+      <button (click)="guardarSexo()" [disabled]="guardandoSexo"
+        class="flex-1 py-3 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/30 active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2">
+        <span *ngIf="!guardandoSexo">Guardar</span>
+        <span *ngIf="guardandoSexo" class="flex items-center gap-2">
+          <span class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+          Guardando...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

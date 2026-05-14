@@ -17,6 +17,7 @@ export class Register {
     correo: '',
     password: '',
     rol: 'Estudiante',
+    sexo: '',
     telefono: '',
     tituloProfesional: ''
   };

@@ -30,6 +30,11 @@ export const routes: Routes = [
         path: 'reportes',
         loadComponent: () =>
           import('./admin/admin-reportes/admin-reportes.component').then(m => m.AdminReportesComponent)
+      },
+      {
+        path: 'estudiantes',
+        loadComponent: () =>
+          import('./admin/admin-estudiantes/admin-estudiantes.component').then(m => m.AdminEstudiantesComponent)
       }
     ]
   },

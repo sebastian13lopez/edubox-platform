@@ -94,6 +94,36 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// --- RUTA: Actualizar datos de un usuario (sexo, estado, etc.) ---
+// PUT /api/usuarios/:id
+// Permite al admin actualizar campos como sexo de estudiantes existentes.
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const camposPermitidos = ['sexo', 'estado', 'nombre', 'telefono', 'tituloProfesional'];
+    const actualizacion = {};
+    camposPermitidos.forEach(campo => {
+      if (req.body[campo] !== undefined) {
+        actualizacion[campo] = req.body[campo];
+      }
+    });
+
+    const usuarioActualizado = await User.findByIdAndUpdate(
+      id,
+      { $set: actualizacion },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!usuarioActualizado) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+    res.json(usuarioActualizado);
+  } catch (error) {
+    console.error('Error actualizando usuario:', error);
+    res.status(500).json({ mensaje: 'Error al actualizar el usuario' });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────
 // ÍNDICE GEOESPACIAL (2DSphere) — Endpoints relacionados
 // ─────────────────────────────────────────────────────────────
@@ -180,4 +210,95 @@ router.get('/curso/:cursoId/ubicaciones', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// ESTADÍSTICAS PARA EL DASHBOARD DEL ADMINISTRADOR
+// ─────────────────────────────────────────────────────────────
+
+// --- RUTA: Cantidad de estudiantes por sexo ---
+// GET /api/usuarios/stats/por-sexo
+// Usa aggregation pipeline con $match + $group para contar por campo 'sexo'.
+router.get('/stats/por-sexo', async (req, res) => {
+  try {
+    const stats = await User.aggregate([
+      { $match: { rol: 'estudiante' } },                     // Filtrar solo estudiantes
+      { $group: { _id: '$sexo', total: { $sum: 1 } } },      // Agrupar por sexo
+      { $sort: { total: -1 } }                               // Ordenar de mayor a menor
+    ]);
+
+    // Normalizar: asegurar que existan todas las categorías (aunque sean 0)
+    const mapa = { Masculino: 0, Femenino: 0, Otro: 0, 'Prefiero no decir': 0, 'Sin especificar': 0 };
+    stats.forEach(s => {
+      const clave = s._id || 'Sin especificar';
+      mapa[clave] = s.total;
+    });
+
+    res.json(mapa);
+  } catch (error) {
+    console.error('Error obteniendo stats por sexo:', error);
+    res.status(500).json({ mensaje: 'Error al obtener estadísticas por sexo' });
+  }
+});
+
+// --- RUTA: Actividad de estudiantes por hora del día (hoy) ---
+// GET /api/usuarios/stats/actividad-dia
+// Usa $hour de MongoDB para extraer la hora de 'updatedAt' y contar actividad.
+// Si no hay datos de hoy, devuelve datos de toda la semana agrupados por hora.
+router.get('/stats/actividad-dia', async (req, res) => {
+  try {
+    // Inicio y fin del día actual (UTC)
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const manana = new Date(hoy);
+    manana.setDate(manana.getDate() + 1);
+
+    let stats = await User.aggregate([
+      {
+        $match: {
+          rol: 'estudiante',
+          updatedAt: { $gte: hoy, $lt: manana }   // Operador $gte y $lt para rango del día
+        }
+      },
+      {
+        $group: {
+          _id: { $hour: '$updatedAt' },            // Extraer la hora (0-23)
+          total: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id': 1 } }
+    ]);
+
+    // Si no hay datos de hoy, usar la semana completa para mostrar el patrón
+    if (stats.length === 0) {
+      const hace7dias = new Date(hoy);
+      hace7dias.setDate(hace7dias.getDate() - 7);
+
+      stats = await User.aggregate([
+        {
+          $match: {
+            rol: 'estudiante',
+            updatedAt: { $gte: hace7dias }         // Última semana si no hay datos hoy
+          }
+        },
+        {
+          $group: {
+            _id: { $hour: '$updatedAt' },
+            total: { $sum: 1 }
+          }
+        },
+        { $sort: { '_id': 1 } }
+      ]);
+    }
+
+    // Construir arreglo de 24 horas (índice = hora del día)
+    const horasPorHora = Array(24).fill(0);
+    stats.forEach(s => { horasPorHora[s._id] = s.total; });
+
+    res.json(horasPorHora);
+  } catch (error) {
+    console.error('Error obteniendo actividad del día:', error);
+    res.status(500).json({ mensaje: 'Error al obtener actividad del día' });
+  }
+});
+
 module.exports = router;
+

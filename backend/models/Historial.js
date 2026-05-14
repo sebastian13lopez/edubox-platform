@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const HistorialSchema = new mongoose.Schema({
-  curso_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso', required: true },
-  profesor_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
+  curso_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  profesor_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   textoCompleto: { type: String, required: true },
   estadisticas: {
     palabras: { type: Number, default: 0 }

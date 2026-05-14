@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
+  sexo: {
+    type: String,
+    enum: ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir', null],
+    default: null
+  },
   telefono: {
     type: String,
     trim: true
