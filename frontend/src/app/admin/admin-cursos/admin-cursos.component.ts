@@ -86,7 +86,7 @@ export class AdminCursosComponent implements OnInit {
   eliminarCurso(id: string) {
     if(confirm('¿Estás seguro de eliminar PERMANENTEMENTE este curso? Esta acción no se puede deshacer.')) {
       this.eliminandoCursoId = id;
-      this.http.delete(environment.apiUrl + '/cursos'/' + id).subscribe({
+      this.http.delete(environment.apiUrl + '/cursos/' + id).subscribe({
         next: () => {
           this.eliminandoCursoId = null;
           this.cursos = this.cursos.filter(c => c._id !== id);

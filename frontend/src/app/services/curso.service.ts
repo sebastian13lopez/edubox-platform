@@ -42,19 +42,19 @@ export class CursoService {
   }
 
   obtenerHistorialesPorCurso(cursoId: string): Observable<any[]> {
-    return this.http.get<any[]>(environment.apiUrl + '/historial/curso/${cursoId}');
+    return this.http.get<any[]>(`${environment.apiUrl}/historial/curso/${cursoId}`);
   }
 
   obtenerHistorialesPorEstudiante(estudianteId: string): Observable<any[]> {
-    return this.http.get<any[]>(environment.apiUrl + '/historial/estudiante/${estudianteId}');
+    return this.http.get<any[]>(`${environment.apiUrl}/historial/estudiante/${estudianteId}`);
   }
 
   obtenerHistorialesPorProfesor(profesorId: string): Observable<any[]> {
-    return this.http.get<any[]>(environment.apiUrl + '/historial/profesor/${profesorId}');
+    return this.http.get<any[]>(`${environment.apiUrl}/historial/profesor/${profesorId}`);
   }
 
   descargarReportePDF(historialId: string, rol: string): Observable<Blob> {
-    return this.http.get(environment.apiUrl + '/historial/${historialId}/pdf'?role=${rol}`, {
+    return this.http.get(`${environment.apiUrl}/historial/${historialId}/pdf?role=${rol}`, {
       responseType: 'blob'
     });
   }
