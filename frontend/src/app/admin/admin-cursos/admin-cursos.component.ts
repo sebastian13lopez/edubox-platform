@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -54,7 +55,7 @@ export class AdminCursosComponent implements OnInit {
 
   cargarUsuarios() {
     // Usamos HttpClient directo al servidor backend
-    this.http.get<any[]>('http://localhost:3000/api/usuarios').subscribe({
+    this.http.get<any[]>(environment.apiUrl + '/usuarios').subscribe({
       next: (usuarios: any[]) => {
         // Evitamos que asigne cursos a profesores pendientes/rechazados si aplicara
         this.profesores = usuarios.filter((u: any) => u.rol === 'profesor' && u.estado !== 'Pendiente');
@@ -85,7 +86,7 @@ export class AdminCursosComponent implements OnInit {
   eliminarCurso(id: string) {
     if(confirm('¿Estás seguro de eliminar PERMANENTEMENTE este curso? Esta acción no se puede deshacer.')) {
       this.eliminandoCursoId = id;
-      this.http.delete('http://localhost:3000/api/cursos/' + id).subscribe({
+      this.http.delete(environment.apiUrl + '/cursos'/' + id).subscribe({
         next: () => {
           this.eliminandoCursoId = null;
           this.cursos = this.cursos.filter(c => c._id !== id);

@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -36,7 +37,7 @@ export class AdminProfesoresComponent implements OnInit {
     this.cargando = true;
     this.cdr.detectChanges(); // Forzamos actualización visual al inicio
 
-    this.http.get<any>('http://localhost:3000/api/usuarios').subscribe({
+    this.http.get<any>(environment.apiUrl + '/usuarios').subscribe({
       next: (res: any) => {
         try {
           console.log('Respuesta cruda del backend:', res);
@@ -81,7 +82,7 @@ export class AdminProfesoresComponent implements OnInit {
     this.creandoProfesor = true;
     this.cdr.detectChanges();
 
-    this.http.post('http://localhost:3000/api/usuarios/profesor/crear', this.nuevoProfesor).subscribe({
+    this.http.post(environment.apiUrl + '/usuarios/profesor/crear', this.nuevoProfesor).subscribe({
       next: (res: any) => {
         this.profesores.unshift(res); // Añadir al principio de la lista local
         this.cerrarModal();
@@ -104,7 +105,7 @@ export class AdminProfesoresComponent implements OnInit {
     this.procesandoId = id;
     this.cdr.detectChanges();
 
-    this.http.put(`http://localhost:3000/api/usuarios/profesor/aprobar/${id}`, {}).subscribe({
+    this.http.put(environment.apiUrl + '/usuarios/profesor/aprobar/${id}', {}).subscribe({
       next: (res: any) => {
         this.procesandoId = null;
         // Actualizamos estado en UI localmente sin recargar todo
@@ -127,7 +128,7 @@ export class AdminProfesoresComponent implements OnInit {
     this.procesandoId = id;
     this.cdr.detectChanges();
 
-    this.http.delete(`http://localhost:3000/api/usuarios/${id}`).subscribe({
+    this.http.delete(environment.apiUrl + '/usuarios/${id}').subscribe({
       next: () => {
         this.procesandoId = null;
         // Quitar de la lista local

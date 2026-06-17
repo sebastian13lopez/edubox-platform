@@ -83,10 +83,27 @@ router.put('/profesor/aprobar/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const usuarioEliminado = await User.findByIdAndDelete(id);
-    if (!usuarioEliminado) {
+    
+    // 1. Buscar el usuario a eliminar
+    const usuario = await User.findById(id);
+    if (!usuario) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
+
+    // 2. Restricción de negocio: bloquear eliminación de profesor con cursos activos
+    if (usuario.rol === 'profesor') {
+      const Course = require('../models/Course');
+      const cursoAsociado = await Course.findOne({ profesor_id: id });
+      if (cursoAsociado) {
+        return res.status(400).json({ 
+          error: 'Restricción de negocio',
+          mensaje: `No se puede eliminar al docente "${usuario.nombre}" porque tiene cursos asociados (ej. "${cursoAsociado.nombre}").` 
+        });
+      }
+    }
+
+    // 3. Proceder con la eliminación si pasa las validaciones
+    await User.findByIdAndDelete(id);
     res.json({ mensaje: 'Usuario eliminado del sistema' });
   } catch (error) {
     console.error('Error al eliminar usuario:', error);

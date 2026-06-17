@@ -18,6 +18,7 @@ export class HistorialComponent implements OnInit {
   isLoading = true;
   errorCarga = false;
   claseSeleccionada: any | null = null;
+  isDownloadingPDF = false;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -43,16 +44,17 @@ export class HistorialComponent implements OnInit {
         })
       )
       .subscribe((data: any[]) => {
-        this.historialClases = data.map(h => ({
-          ...h,
-          fechaFormateada: new Date(h.fecha).toLocaleDateString('es', {
-            year: 'numeric', month: 'long', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-          }),
-          curso: h.curso_id?.nombre || 'Clase registrada',
-          profesor: h.profesor_id?.nombre || 'Docente',
-          palabras: h.estadisticas?.palabras || 0
-        }));
+        this.historialClases = data.map(h => {
+          const d = new Date(h.fecha);
+          const pad = (n: number) => n.toString().padStart(2, '0');
+          return {
+            ...h,
+            fechaFormateada: `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} - ${pad(d.getHours())}:${pad(d.getMinutes())}`,
+            curso: h.curso_id?.nombre || 'Clase registrada',
+            profesor: h.profesor_id?.nombre || 'Docente',
+            palabras: h.estadisticas?.palabras || 0
+          };
+        });
         this.isLoading = false;
         this.cdr.detectChanges();
       });
@@ -60,6 +62,31 @@ export class HistorialComponent implements OnInit {
 
   verDetalle(clase: any): void {
     this.claseSeleccionada = this.claseSeleccionada === clase ? null : clase;
+  }
+
+  descargarPDF(): void {
+    if (!this.claseSeleccionada) return;
+    const c = this.claseSeleccionada;
+    this.isDownloadingPDF = true;
+    const rol = this.authService.obtenerRol() || 'estudiante';
+
+    this.cursoService.descargarReportePDF(c._id, rol).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `reporte_${c.curso.replace(/\s+/g, '_')}_${new Date(c.fecha).toISOString().slice(0, 10)}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.isDownloadingPDF = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al descargar PDF:', err);
+        this.isDownloadingPDF = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   recargar(): void {

@@ -35,6 +35,11 @@ export const routes: Routes = [
         path: 'estudiantes',
         loadComponent: () =>
           import('./admin/admin-estudiantes/admin-estudiantes.component').then(m => m.AdminEstudiantesComponent)
+      },
+      {
+        path: 'pqrs',
+        loadComponent: () =>
+          import('./admin/admin-pqrs/admin-pqrs.component').then(m => m.AdminPqrsComponent)
       }
     ]
   },
@@ -111,6 +116,11 @@ export const routes: Routes = [
         path: 'perfil',
         loadComponent: () =>
           import('./estudiante/perfil/perfil.component').then(m => m.PerfilComponent)
+      },
+      {
+        path: 'pqrs',
+        loadComponent: () =>
+          import('./estudiante/pqrs/pqrs-estudiante.component').then(m => m.PqrsEstudianteComponent)
       },
     ]
   },

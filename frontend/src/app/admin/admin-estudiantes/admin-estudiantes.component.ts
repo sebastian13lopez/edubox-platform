@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import {
   Component, OnInit, AfterViewInit, OnDestroy,
   ViewChild, ElementRef, ChangeDetectorRef
@@ -9,7 +10,7 @@ import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
-const API = 'http://localhost:3000/api/usuarios';
+const API = environment.apiUrl + '/usuarios';
 
 const SEXO_LABELS  = ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir', 'Sin especificar'];
 const SEXO_COLORS  = [

@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -315,7 +316,7 @@ export class MapaEstudiantesComponent implements OnInit, AfterViewInit, OnDestro
   private mapa: any = null;
   private markers: any[] = [];
   private COLS = ['#3B82F6','#22C55E','#F59E0B','#EF4444','#A855F7','#EC4899','#14B8A6','#F97316'];
-  private readonly API = 'http://localhost:3000/api/usuarios';
+  private readonly API = environment.apiUrl + '/usuarios';
 
   constructor(
     private http: HttpClient,

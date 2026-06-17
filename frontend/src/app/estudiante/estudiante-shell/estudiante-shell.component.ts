@@ -3,6 +3,8 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
+import { NotificationService, AppNotification } from '../../services/notification.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-estudiante-shell',
@@ -14,6 +16,12 @@ import { Router } from '@angular/router';
 export class EstudianteShellComponent implements OnInit {
 
   nombreEstudiante = '';
+  
+  // Estado de Notificaciones
+  notificaciones: AppNotification[] = [];
+  noLeidasCount: number = 0;
+  mostrarDropdownNotificaciones = false;
+  private notifSub!: Subscription;
 
   navItems = [
     {
@@ -36,12 +44,41 @@ export class EstudianteShellComponent implements OnInit {
       label: 'Mi Perfil',
       icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
     },
+    {
+      path: 'pqrs',
+      label: 'PQRS',
+      icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z'
+    },
   ];
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.nombreEstudiante = this.authService.getNombreUsuario();
+    
+    // Suscribirse a las notificaciones globales
+    this.notifSub = this.notificationService.getNotificaciones().subscribe(notifs => {
+      this.notificaciones = notifs;
+      this.noLeidasCount = this.notificaciones.filter(n => !n.leida).length;
+    });
+  }
+
+  toggleNotificaciones(): void {
+    this.mostrarDropdownNotificaciones = !this.mostrarDropdownNotificaciones;
+    if (this.mostrarDropdownNotificaciones && this.noLeidasCount > 0) {
+      this.notificationService.marcarComoLeidas();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.notifSub) {
+      this.notifSub.unsubscribe();
+    }
+    this.notificationService.desconectar();
   }
 
   onLogout(): void {

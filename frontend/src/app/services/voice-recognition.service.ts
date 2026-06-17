@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
@@ -209,7 +210,7 @@ export class VoiceRecognitionService {
     this.isProcessingIA = true;
     this.processingSubject.next(true);
 
-    const url = `http://localhost:3000/api/analitica/corregir-ortografia`;
+    const url = environment.apiUrl + '/analitica/corregir-ortografia';
 
     this.http.post<any>(url, { texto: textoBruto }).subscribe({
       next: (response) => {

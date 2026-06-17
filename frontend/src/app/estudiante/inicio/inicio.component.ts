@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -112,7 +113,7 @@ export class InicioComponent implements OnInit, OnDestroy {
   }
 
   fetchActivos(cursoId: string) {
-    this.http.get<any[]>(`http://localhost:3000/api/cursos/${cursoId}/activos`)
+    this.http.get<any[]>(environment.apiUrl + '/cursos/${cursoId}/activos')
       .pipe(
         timeout(3000),
         catchError(() => of([]))

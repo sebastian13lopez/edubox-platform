@@ -1,19 +1,30 @@
-<div class="h-full bg-[#F9FAFB] font-sans text-[#111827] p-8 w-full max-w-7xl mx-auto flex flex-col">
-  <header class="w-full mb-10 text-left">
+<div class="h-full bg-[#F9FAFB] font-sans text-[#111827] p-4 md:p-8 w-full max-w-[1600px] mx-auto flex flex-col overflow-x-hidden">
+  <header class="w-full mb-8 text-left">
     <h1 class="text-3xl font-extrabold tracking-tight">Historial y Reportes</h1>
     <p class="text-[#6B7280] font-medium mt-1">Supervisa las clases impartidas y analiza el rendimiento de tus discípulos.</p>
   </header>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start relative h-full">
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start relative h-full">
 
     <!-- MASTER: Tabla de Clases -->
-    <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-full overflow-hidden transition-all duration-300">
+    <div class="xl:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-full overflow-hidden transition-all duration-300">
       
-      <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
-         <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-           <svg class="w-5 h-5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-           Clases Anteriores
-         </h2>
+      <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white overflow-x-auto">
+         <div class="flex items-center gap-2 bg-slate-100/50 p-1 rounded-xl border border-slate-200/60 min-w-max">
+           <!-- Tabs Switcher -->
+           <button (click)="switchTab('historial')" 
+                   [ngClass]="activeTab === 'historial' ? 'bg-white text-[#2563EB] shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/30'"
+                   class="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+             Clases Anteriores
+           </button>
+           <button (click)="switchTab('dashboard')" 
+                   [ngClass]="activeTab === 'dashboard' ? 'bg-white text-[#2563EB] shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/30'"
+                   class="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+             Dashboard Analítico
+           </button>
+         </div>
       </div>
 
       <div *ngIf="isLoadingHistorial" class="flex flex-col justify-center items-center py-20 px-4 gap-3">
@@ -29,32 +40,34 @@
         <button (click)="recargar()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors active:scale-95 flex items-center justify-center"><svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Reintentar</button>
       </div>
 
-      <ng-container *ngIf="!isLoadingHistorial">
+      <ng-container *ngIf="!isLoadingHistorial && activeTab === 'historial'">
         <div class="overflow-x-auto w-full" *ngIf="historialClases.length > 0; else noHistorial">
           <table class="w-full text-left border-collapse min-w-full">
             <thead>
-              <tr class="bg-slate-50/80 border-b border-slate-100 text-[11px] uppercase tracking-widest text-slate-400 font-black">
-                <th class="px-8 py-5">Fecha</th>
-                <th class="px-8 py-5">Curso</th>
-                <th class="px-8 py-5">Duración</th>
-                <th class="px-8 py-5 text-right rounded-tr-3xl">Acciones</th>
+              <tr class="bg-slate-50/80 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-400 font-black">
+                <th class="px-5 py-4 w-1/4">Fecha</th>
+                <th class="px-5 py-4 w-1/3">Curso</th>
+                <th class="px-5 py-4 hidden md:table-cell w-1/5">Duración</th>
+                <th class="px-5 py-4 text-right rounded-tr-3xl w-auto">Acciones</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
               <tr *ngFor="let h of historialClases" 
                   class="transition-colors group cursor-pointer"
-                  [ngClass]="{'bg-blue-50/30 border-l-4 border-l-[#2563EB]': claseSeleccionadaReporte === h, 'hover:bg-slate-50 border-l-4 border-transparent': claseSeleccionadaReporte !== h}"
+                  [ngClass]="{'bg-blue-50/50 border-l-4 border-l-blue-600': claseSeleccionadaReporte === h, 'hover:bg-slate-50 border-l-4 border-transparent': claseSeleccionadaReporte !== h}"
                   (click)="verReporteDetalle(h)">
-                <td class="px-8 py-5 text-sm font-bold text-[#111827] whitespace-nowrap">{{ h.fechaFormateada }}</td>
-                <td class="px-8 py-5 whitespace-nowrap">
-                  <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-[#F3F4F6] text-slate-600 border border-slate-200 group-hover:bg-[#2563EB] group-hover:text-white transition-colors" [ngClass]="{'bg-[#2563EB] text-white': claseSeleccionadaReporte === h}">
-                    {{ h.curso }}
+                <td class="px-5 py-4 text-sm font-bold text-slate-800 whitespace-nowrap">{{ h.fechaFormateada }}</td>
+                <td class="px-5 py-4">
+                  <!-- Mejora de contraste y diseño para el curso -->
+                  <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all" 
+                        [ngClass]="claseSeleccionadaReporte === h ? 'bg-blue-600 text-white shadow-md border border-blue-600' : 'bg-indigo-50 text-indigo-700 border border-indigo-100 group-hover:bg-blue-500 group-hover:text-white'">
+                    <span class="truncate max-w-[200px] sm:max-w-[150px] lg:max-w-[250px]">{{ h.curso }}</span>
                   </span>
                 </td>
-                <td class="px-8 py-5 text-sm font-semibold text-slate-500 whitespace-nowrap">{{ h.duracion }}</td>
-                <td class="px-8 py-5 text-right whitespace-nowrap">
-                  <button class="text-sm font-bold px-4 py-2 rounded-xl transition-all"
-                    [ngClass]="claseSeleccionadaReporte === h ? 'bg-blue-100 text-[#2563EB]' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'"
+                <td class="px-5 py-4 text-sm font-semibold text-slate-500 whitespace-nowrap hidden md:table-cell">{{ h.duracion }}</td>
+                <td class="px-5 py-4 text-right whitespace-nowrap">
+                  <button class="text-xs font-bold px-4 py-2 rounded-xl transition-all"
+                    [ngClass]="claseSeleccionadaReporte === h ? 'bg-blue-600 text-white shadow-md' : 'bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 shadow-sm'"
                     (click)="verReporteDetalle(h); $event.stopPropagation()">Ver Reporte</button>
                 </td>
               </tr>
@@ -71,6 +84,33 @@
             <p class="text-[#6B7280] max-w-sm">Tus sesiones anteriores aparecerán aquí para realizar reportes de evaluación.</p>
           </div>
         </ng-template>
+      </ng-container>
+
+      <ng-container *ngIf="!isLoadingHistorial && activeTab === 'dashboard'">
+        <div class="p-8 w-full">
+          <div class="grid grid-cols-1 gap-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 w-full">
+              <h3 class="font-bold text-slate-800 mb-4 text-center">Evolución de Duración de Clases (min)</h3>
+              <div class="relative w-full h-64">
+                <canvas id="chartDuracion"></canvas>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                <h3 class="font-bold text-slate-800 mb-4 text-center">Asistencia vs. Ausentismo</h3>
+                <div class="relative w-full h-64">
+                  <canvas id="chartAsistencia"></canvas>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col items-center">
+                <h3 class="font-bold text-slate-800 mb-4 text-center">Participación Activa (Total)</h3>
+                <div class="relative w-full max-w-[250px] h-64">
+                  <canvas id="chartParticipacion"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </ng-container>
     </div>
 
@@ -149,7 +189,12 @@
            </table>
         </div>
 
-        <div class="p-6 border-t border-slate-100 bg-[#F9FAFB]/50">
+        <div class="p-6 border-t border-slate-100 bg-[#F9FAFB]/50 flex flex-col gap-2">
+          <button (click)="descargarPDF()" [disabled]="isDownloadingPDF" class="w-full bg-[#10B981] hover:bg-emerald-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/30 transition-all flex items-center justify-center gap-2 active:scale-95">
+            <svg *ngIf="isDownloadingPDF" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <svg *ngIf="!isDownloadingPDF" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            {{ isDownloadingPDF ? 'Generando PDF...' : 'Descargar Reporte PDF' }}
+          </button>
           <button (click)="exportarCSV()" class="w-full bg-[#2563EB] hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2 active:scale-95">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             Exportar CSV de Evaluaciones

@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -21,7 +22,7 @@ export interface DashboardStudent {
   providedIn: 'root'
 })
 export class AnaliticaService {
-  private apiUrl = 'http://localhost:3000/api/analitica';
+  private apiUrl = environment.apiUrl + '/analitica';
 
   constructor(private http: HttpClient) {}
 
@@ -40,5 +41,13 @@ export class AnaliticaService {
 
   generarQuiz(texto: string, claseId?: string): Observable<QuizData> {
     return this.http.post<QuizData>(`${this.apiUrl}/generar-quiz`, { texto, claseId });
+  }
+
+  obtenerDashboardGlobal(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/dashboard/admin`);
+  }
+
+  obtenerDashboardProfesor(profesorId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/dashboard/profesor/${profesorId}`);
   }
 }

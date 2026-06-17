@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable } from 'rxjs';
@@ -7,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class ChatService {
   private socket: Socket;
-  private serverUrl = 'http://localhost:3000';
+  private serverUrl = environment.wsUrl;
 
   constructor() {
     // Inicializar conexión con el Web Socket de Node.js

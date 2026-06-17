@@ -1,14 +1,71 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const ActivityLog = require('../models/ActivityLog');
 const Course = require('../models/Course');
 const User = require('../models/User');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Groq = require('groq-sdk');
+const Historial = require('../models/Historial');
 
 // Cooldown por sala: evita spam de quizes
 const quizCooldowns = new Map();
 const QUIZ_COOLDOWN_MS = 30_000; // 30 segundos entre quizes por sala
+
+// ─────────────────────────────────────────────────────────────────────
+// GET /api/analitica/dashboard/admin (Global Dashboard Analytics)
+// ─────────────────────────────────────────────────────────────────────
+router.get('/dashboard/admin', async (req, res) => {
+  try {
+    const historiales = await Historial.find().sort({ fecha: 1 });
+    
+    const dashboardData = {
+      labels: historiales.map(h => new Date(h.fecha).toLocaleDateString('es-CO')),
+      duracion: historiales.map(h => Math.round((h.duracion || 0) / 60)), // en minutos
+      asistencia: {
+        presentes: historiales.map(h => (h.participantes || []).length),
+        ausentes: historiales.map(h => (h.ausentes || []).length)
+      },
+      participacion: {
+        mensajesTotales: historiales.reduce((acc, h) => acc + (h.metricasParticipacion ? h.metricasParticipacion.reduce((mAcc, m) => mAcc + m.mensajesCount, 0) : 0), 0),
+        preguntasTotales: historiales.reduce((acc, h) => acc + (h.metricasParticipacion ? h.metricasParticipacion.reduce((mAcc, m) => mAcc + m.preguntas.length, 0) : 0), 0)
+      }
+    };
+    
+    res.json(dashboardData);
+  } catch (err) {
+    console.error('Error obteniendo dashboard global:', err);
+    res.status(500).json({ error: 'Error obteniendo dashboard global' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// GET /api/analitica/dashboard/profesor/:id (Dashboard Analytics Profesor)
+// ─────────────────────────────────────────────────────────────────────
+router.get('/dashboard/profesor/:id', async (req, res) => {
+  try {
+    const profesorId = req.params.id;
+    const historiales = await Historial.find({ profesor_id: profesorId }).sort({ fecha: 1 });
+    
+    const dashboardData = {
+      labels: historiales.map(h => new Date(h.fecha).toLocaleDateString('es-CO')),
+      duracion: historiales.map(h => Math.round((h.duracion || 0) / 60)), // en minutos
+      asistencia: {
+        presentes: historiales.map(h => (h.participantes || []).length),
+        ausentes: historiales.map(h => (h.ausentes || []).length)
+      },
+      participacion: {
+        mensajesTotales: historiales.reduce((acc, h) => acc + (h.metricasParticipacion ? h.metricasParticipacion.reduce((mAcc, m) => mAcc + m.mensajesCount, 0) : 0), 0),
+        preguntasTotales: historiales.reduce((acc, h) => acc + (h.metricasParticipacion ? h.metricasParticipacion.reduce((mAcc, m) => mAcc + m.preguntas.length, 0) : 0), 0)
+      }
+    };
+    
+    res.json(dashboardData);
+  } catch (err) {
+    console.error('Error obteniendo dashboard profesor:', err);
+    res.status(500).json({ error: 'Error obteniendo dashboard profesor' });
+  }
+});
 
 // ─────────────────────────────────────────────────────────────────────
 // POST /api/analitica/registrar
@@ -31,11 +88,18 @@ router.post('/registrar', async (req, res) => {
 router.get('/dashboard/:cursoId', async (req, res) => {
   try {
     const cursoId = req.params.cursoId;
+
+    // Convertir a ObjectId para que ActivityLog.find() funcione correctamente
+    // (clase_id en ActivityLog es de tipo ObjectId, no String)
+    let cursoObjId;
+    try { cursoObjId = new mongoose.Types.ObjectId(cursoId); }
+    catch { return res.status(400).json({ error: 'cursoId inválido' }); }
+
     const curso = await Course.findById(cursoId).populate('estudiantes', 'nombre correo');
     if (!curso) return res.status(404).json({ error: 'Curso no encontrado' });
 
     const dosHorasAtras = new Date(Date.now() - 2 * 60 * 60 * 1000);
-    const logs = await ActivityLog.find({ clase_id: cursoId, fecha: { $gte: dosHorasAtras } });
+    const logs = await ActivityLog.find({ clase_id: cursoObjId, fecha: { $gte: dosHorasAtras } });
 
     const dashboardStats = curso.estudiantes.map(estudiante => {
       const studentLogs = logs.filter(log => String(log.estudiante_id) === String(estudiante._id));

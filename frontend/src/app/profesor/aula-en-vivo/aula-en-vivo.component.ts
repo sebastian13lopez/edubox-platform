@@ -5,6 +5,7 @@ import { ChatService } from '../../services/chat.service';
 import { AuthService } from '../../services/auth';
 import { CursoService } from '../../services/curso.service';
 import { AnaliticaService, DashboardStudent, QuizData } from '../../services/analitica.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-profesor-aula-en-vivo',
@@ -21,6 +22,10 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
 
   claseIniciada = false;
   clasePausada  = false;
+
+  tiempoTranscurrido = 0; // en segundos
+  cronometroInterval: any;
+  cronometroFormateado = '00:00:00';
 
   isRecording = false;
   
@@ -65,7 +70,8 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
     private chatService: ChatService,
     private authService: AuthService,
     private cursoService: CursoService,
-    private analiticaService: AnaliticaService
+    private analiticaService: AnaliticaService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -210,6 +216,41 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
     this.claseIniciada = true;
     this.clasePausada  = false;
     this.voiceService.start();
+
+    // Notificar a todos los estudiantes de este curso que la clase ha iniciado
+    if (this.claseActual) {
+      this.notificationService.emitirClaseIniciada(
+        String(this.claseActual.id),
+        this.claseActual.nombre,
+        this.authService.getNombreUsuario() || 'Profesor'
+      );
+    }
+
+    // Iniciar cronómetro
+    this.tiempoTranscurrido = 0;
+    this.cronometroFormateado = '00:00:00';
+    if (this.cronometroInterval) {
+      clearInterval(this.cronometroInterval);
+    }
+    this.cronometroInterval = setInterval(() => {
+      if (!this.clasePausada) {
+        this.tiempoTranscurrido++;
+        this.actualizarCronometroUI();
+      }
+    }, 1000);
+  }
+
+  actualizarCronometroUI(): void {
+    const hrs = Math.floor(this.tiempoTranscurrido / 3600);
+    const mins = Math.floor((this.tiempoTranscurrido % 3600) / 60);
+    const segs = this.tiempoTranscurrido % 60;
+    
+    const hStr = hrs < 10 ? '0' + hrs : String(hrs);
+    const mStr = mins < 10 ? '0' + mins : String(mins);
+    const sStr = segs < 10 ? '0' + segs : String(segs);
+    
+    this.cronometroFormateado = `${hStr}:${mStr}:${sStr}`;
+    this.cdr.detectChanges();
   }
 
   pausarClase(): void {
@@ -223,6 +264,12 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
     this.clasePausada  = false;
     this.voiceService.stop();
     this.voiceService.clear();
+
+    if (this.cronometroInterval) {
+      clearInterval(this.cronometroInterval);
+    }
+    this.tiempoTranscurrido = 0;
+    this.cronometroFormateado = '00:00:00';
   }
 
   /**
@@ -232,6 +279,11 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
   finalizarYDescargar(): void {
     // 1. Exportación manual a Word
     this.voiceService.descargarTranscripcionWord();
+
+    // Detener cronómetro
+    if (this.cronometroInterval) {
+      clearInterval(this.cronometroInterval);
+    }
     
     // 2. Guardar en MongoDB con feedback visual
     if (this.claseActual && this.voiceService.historialCompleto) {
@@ -239,7 +291,13 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
           curso_id: this.claseActual.id,
           profesor_id: this.authService.getIdUsuario(),
           textoCompleto: this.voiceService.historialCompleto,
-          participantes: this.usuariosActivos.map(u => u.nombre)
+          participantes: this.usuariosActivos.filter(u => u.rol !== 'profesor').map(u => u.nombre),
+          duracion: this.tiempoTranscurrido,
+          mensajesChat: this.mensajesChat.map(m => ({
+            autor: m.autor === 'Tú' ? (this.authService.getNombreUsuario() || 'Profesor') : m.autor,
+            texto: m.texto,
+            autor_id: m.autor_id || null
+          }))
        }).subscribe({
           next: () => {
             this.mostrarToast('Clase guardada en el historial correctamente', 'success');
@@ -253,16 +311,24 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
       this.mostrarToast('Sin transcripción que guardar. Activa el micófono durante la clase.', 'info');
     }
 
-    // 3. Apagar micrófono
+    // 3. Apagar micrófono y restablecer variables
     this.claseIniciada = false;
     this.clasePausada = false;
     this.voiceService.stop();
+    this.tiempoTranscurrido = 0;
+    this.cronometroFormateado = '00:00:00';
   }
 
   enviarMensaje(texto: string): void {
     if (!texto.trim()) return;
     const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    this.mensajesChat.push({ autor: 'Tú', texto, hora, esMio: true });
+    this.mensajesChat.push({ 
+      autor: 'Tú', 
+      texto, 
+      hora, 
+      esMio: true, 
+      autor_id: this.authService.getIdUsuario() 
+    });
 
     if (this.claseActual) {
       this.chatService.enviarMensaje(
@@ -378,6 +444,9 @@ export class AulaEnVivoComponent implements OnInit, AfterViewChecked, AfterViewI
   ngOnDestroy(): void {
     if (this.analyticsInterval) {
       clearInterval(this.analyticsInterval);
+    }
+    if (this.cronometroInterval) {
+      clearInterval(this.cronometroInterval);
     }
   }
 }

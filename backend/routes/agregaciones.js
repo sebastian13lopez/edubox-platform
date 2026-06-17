@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const ActivityLog = require('../models/ActivityLog');
 const Course = require('../models/Course');
 const Historial = require('../models/Historial');
@@ -21,9 +22,14 @@ const User = require('../models/User');
 // ─────────────────────────────────────────────────────────────
 router.get('/group/:cursoId', async (req, res) => {
   try {
+    // Convertir el parámetro a ObjectId (clase_id es ObjectId en el schema)
+    let cursoObjId;
+    try { cursoObjId = new mongoose.Types.ObjectId(req.params.cursoId); }
+    catch { return res.status(400).json({ error: 'cursoId inválido' }); }
+
     const resultado = await ActivityLog.aggregate([
       // Filtrar solo los logs de ese curso específico
-      { $match: { clase_id: { $toString: req.params.cursoId } } },
+      { $match: { clase_id: cursoObjId } },
 
       // Agrupar por estudiante y acumular métricas
       {
@@ -143,13 +149,18 @@ router.get('/sort', async (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/match/:cursoId', async (req, res) => {
   try {
+    // Convertir el parámetro a ObjectId (clase_id es ObjectId en el schema)
+    let cursoObjId;
+    try { cursoObjId = new mongoose.Types.ObjectId(req.params.cursoId); }
+    catch { return res.status(400).json({ error: 'cursoId inválido' }); }
+
     const dosHorasAtras = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
     const resultado = await ActivityLog.aggregate([
       // Filtro principal: solo logs recientes del curso con quiz correcto
       {
         $match: {
-          clase_id: { $toString: req.params.cursoId },
+          clase_id: cursoObjId,
           tipo_evento: 'quiz_answered_correct',
           fecha: { $gte: dosHorasAtras }
         }

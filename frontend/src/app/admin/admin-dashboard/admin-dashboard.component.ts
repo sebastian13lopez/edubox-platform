@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -86,7 +87,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   // ── Carga de datos ──────────────────────────────────────────
 
   cargarSolicitudes() {
-    this.http.get('http://localhost:3000/api/usuarios/pendientes').subscribe({
+    this.http.get(environment.apiUrl + '/usuarios/pendientes').subscribe({
       next: (res: any) => {
         this.solicitudesPendientes = res;
         this.profesoresPendientesCount = this.solicitudesPendientes.length;
@@ -103,7 +104,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   cargarUsuarios() {
-    this.http.get<any[]>('http://localhost:3000/api/usuarios').subscribe({
+    this.http.get<any[]>(environment.apiUrl + '/usuarios').subscribe({
       next: (usuarios) => {
         this.profesores = usuarios.filter(u => u.rol === 'profesor');
         this.estudiantes = usuarios.filter(u => u.rol === 'estudiante');
@@ -113,7 +114,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   cargarStatsPorSexo() {
-    this.http.get<any>('http://localhost:3000/api/usuarios/stats/por-sexo').subscribe({
+    this.http.get<any>(environment.apiUrl + '/usuarios/stats/por-sexo').subscribe({
       next: (data) => {
         this.statsPorSexo = data;
         this.dataReadySexo = true;
@@ -130,7 +131,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   cargarStatsActividadDia() {
-    this.http.get<number[]>('http://localhost:3000/api/usuarios/stats/actividad-dia').subscribe({
+    this.http.get<number[]>(environment.apiUrl + '/usuarios/stats/actividad-dia').subscribe({
       next: (data) => {
         this.statsActividadDia = data;
         this.dataReadyTimeline = true;

@@ -3,6 +3,8 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
+import { NotificationService, AppNotification } from '../../services/notification.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profesor-shell',
@@ -15,6 +17,12 @@ export class ProfesorShellComponent implements OnInit {
 
   nombreProfesor = '';
   estadoProfesor = '';
+
+  // Estado de Notificaciones
+  notificaciones: AppNotification[] = [];
+  noLeidasCount: number = 0;
+  mostrarDropdownNotificaciones = false;
+  private notifSub!: Subscription;
 
   // Menú lateral — cada item tiene routerLink relativo al shell
   navItems = [
@@ -45,12 +53,36 @@ export class ProfesorShellComponent implements OnInit {
     },
   ];
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.nombreProfesor = this.authService.getNombreUsuario();
     // Normalizamos el estado para no tener problemas de mayúsculas
     this.estadoProfesor = (this.authService.getEstadoUsuario() || '').trim().toLowerCase();
+
+    // Suscribirse a las notificaciones globales
+    this.notifSub = this.notificationService.getNotificaciones().subscribe(notifs => {
+      this.notificaciones = notifs;
+      this.noLeidasCount = this.notificaciones.filter(n => !n.leida).length;
+    });
+  }
+
+  toggleNotificaciones(): void {
+    this.mostrarDropdownNotificaciones = !this.mostrarDropdownNotificaciones;
+    if (this.mostrarDropdownNotificaciones && this.noLeidasCount > 0) {
+      this.notificationService.marcarComoLeidas();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.notifSub) {
+      this.notifSub.unsubscribe();
+    }
+    this.notificationService.desconectar();
   }
 
   onLogout(): void {

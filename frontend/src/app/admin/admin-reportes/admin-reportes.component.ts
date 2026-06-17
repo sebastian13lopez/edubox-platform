@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -5,6 +6,8 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { CursoService } from '../../services/curso.service';
+import Chart from 'chart.js/auto';
+import { AnaliticaService } from '../../services/analitica.service';
 
 @Component({
   selector: 'app-admin-reportes',
@@ -41,6 +44,13 @@ export class AdminReportesComponent implements OnInit {
   porPagina   = 10;
   Math = Math; // Exponer Math para el template
 
+  // Dashboard Analytics
+  activeTab: 'reportes' | 'dashboard' = 'reportes';
+  dashboardData: any = null;
+  chartDuracion: any;
+  chartAsistencia: any;
+  chartParticipacion: any;
+
   get totalPaginas(): number {
     return Math.ceil(this.reportesFiltrados.length / this.porPagina);
   }
@@ -64,14 +74,15 @@ export class AdminReportesComponent implements OnInit {
   constructor(
     private cursoService: CursoService,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private analiticaService: AnaliticaService
   ) {}
 
   ngOnInit() {
     this.isLoading = true;
 
     forkJoin({
-      usuarios: this.http.get<any[]>('http://localhost:3000/api/usuarios').pipe(
+      usuarios: this.http.get<any[]>(environment.apiUrl + '/usuarios').pipe(
         catchError(err => { console.error('Error cargando usuarios:', err); return of([]); })
       ),
       cursos: this.cursoService.obtenerTodosLosCursos().pipe(
@@ -92,13 +103,14 @@ export class AdminReportesComponent implements OnInit {
         this.docentes = profesores.map((p: any) => p.nombre).sort();
         this.cursos   = res.cursos.map((c: any) => c.nombre).sort();
 
-        this.todosLosReportes = res.historiales.map(r => ({
-          ...r,
-          fechaFormateada: new Date(r.fecha).toLocaleDateString('es-ES', {
-            day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-          })
-        }));
+        this.todosLosReportes = res.historiales.map(r => {
+          const d = new Date(r.fecha);
+          const pad = (n: number) => n.toString().padStart(2, '0');
+          return {
+            ...r,
+            fechaFormateada: `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
+          };
+        });
 
         this.aplicarFiltros();
         this.isLoading = false;
@@ -109,6 +121,97 @@ export class AdminReportesComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+
+    this.cargarDashboard();
+  }
+
+  cargarDashboard(): void {
+    this.analiticaService.obtenerDashboardGlobal().subscribe({
+      next: (data) => {
+        this.dashboardData = data;
+        if (this.activeTab === 'dashboard') {
+          setTimeout(() => this.renderizarGraficos(), 100);
+        }
+      },
+      error: (err) => console.error('Error cargando dashboard global analytics', err)
+    });
+  }
+
+  switchTab(tab: 'reportes' | 'dashboard'): void {
+    this.activeTab = tab;
+    this.cdr.detectChanges();
+    if (tab === 'dashboard' && this.dashboardData) {
+      setTimeout(() => this.renderizarGraficos(), 100);
+    }
+  }
+
+  renderizarGraficos(): void {
+    if (!this.dashboardData) return;
+
+    if (this.chartDuracion) this.chartDuracion.destroy();
+    if (this.chartAsistencia) this.chartAsistencia.destroy();
+    if (this.chartParticipacion) this.chartParticipacion.destroy();
+
+    const ctxDuracion = document.getElementById('chartDuracionAdmin') as HTMLCanvasElement;
+    const ctxAsistencia = document.getElementById('chartAsistenciaAdmin') as HTMLCanvasElement;
+    const ctxParticipacion = document.getElementById('chartParticipacionAdmin') as HTMLCanvasElement;
+
+    if (ctxDuracion) {
+      this.chartDuracion = new Chart(ctxDuracion, {
+        type: 'line',
+        data: {
+          labels: this.dashboardData.labels,
+          datasets: [{
+            label: 'Duración (min)',
+            data: this.dashboardData.duracion,
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'top' } } }
+      });
+    }
+
+    if (ctxAsistencia) {
+      this.chartAsistencia = new Chart(ctxAsistencia, {
+        type: 'bar',
+        data: {
+          labels: this.dashboardData.labels,
+          datasets: [
+            {
+              label: 'Presentes',
+              data: this.dashboardData.asistencia.presentes,
+              backgroundColor: '#10B981'
+            },
+            {
+              label: 'Ausentes',
+              data: this.dashboardData.asistencia.ausentes,
+              backgroundColor: '#EF4444'
+            }
+          ]
+        },
+        options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } }
+      });
+    }
+
+    if (ctxParticipacion) {
+      this.chartParticipacion = new Chart(ctxParticipacion, {
+        type: 'doughnut',
+        data: {
+          labels: ['Mensajes de Chat', 'Preguntas'],
+          datasets: [{
+            data: [
+              this.dashboardData.participacion.mensajesTotales, 
+              this.dashboardData.participacion.preguntasTotales
+            ],
+            backgroundColor: ['#3B82F6', '#F59E0B']
+          }]
+        },
+        options: { responsive: true }
+      });
+    }
   }
 
   aplicarFiltros() {

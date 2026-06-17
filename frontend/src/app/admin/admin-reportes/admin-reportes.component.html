@@ -58,8 +58,26 @@
 
   <!-- ── PANEL PRINCIPAL: TABLA + FILTROS ─────────────────────── -->
   <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
-    
-    <!-- Filtros -->
+    <div class="px-8 py-5 border-b border-slate-100 flex items-center justify-between bg-white">
+      <div class="flex items-center gap-2 bg-slate-100/50 p-1 rounded-xl border border-slate-200/60">
+        <!-- Tabs Switcher -->
+        <button (click)="switchTab('reportes')" 
+                [ngClass]="activeTab === 'reportes' ? 'bg-white text-indigo-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/30'"
+                class="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Registro Detallado
+        </button>
+        <button (click)="switchTab('dashboard')" 
+                [ngClass]="activeTab === 'dashboard' ? 'bg-white text-indigo-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/30'"
+                class="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          Dashboard Analítico
+        </button>
+      </div>
+    </div>
+
+    <ng-container *ngIf="activeTab === 'reportes'">
+      <!-- Filtros -->
     <div class="p-6 border-b border-slate-100 bg-slate-50/50">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         
@@ -142,36 +160,36 @@
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400 font-black border-b border-slate-200">
-            <th class="px-6 py-4">Fecha de Sesión</th>
-            <th class="px-6 py-4">Docente Titular</th>
-            <th class="px-6 py-4 hidden md:table-cell">Materia / Curso</th>
-            <th class="px-6 py-4">Volumen Datos</th>
-            <th class="px-6 py-4 text-right">Detalle</th>
+            <th class="px-5 py-4">Fecha de Sesión</th>
+            <th class="px-5 py-4">Docente Titular</th>
+            <th class="px-5 py-4 hidden md:table-cell">Materia / Curso</th>
+            <th class="px-5 py-4 hidden sm:table-cell">Volumen Datos</th>
+            <th class="px-5 py-4 text-right">Detalle</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           <tr *ngFor="let rep of reportesPagina" class="hover:bg-slate-50/70 transition-colors group">
-            <td class="px-6 py-4 text-sm font-bold text-slate-800 whitespace-nowrap">{{ rep.fechaFormateada }}</td>
-            <td class="px-6 py-4">
+            <td class="px-5 py-4 text-sm font-bold text-slate-800 whitespace-nowrap">{{ rep.fechaFormateada }}</td>
+            <td class="px-5 py-4">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-xs flex-shrink-0 border border-indigo-200/50">
                   {{ rep.profesor_id?.nombre?.charAt(0) || 'D' }}
                 </div>
-                <div class="flex flex-col">
-                  <span class="text-sm font-bold text-slate-700 leading-tight">{{ rep.profesor_id?.nombre || 'Docente Rescindido' }}</span>
-                  <span class="text-[10px] text-slate-400 font-semibold">{{ rep.profesor_id?.email }}</span>
+                <div class="flex flex-col min-w-0">
+                  <span class="text-sm font-bold text-slate-700 leading-tight truncate">{{ rep.profesor_id?.nombre || 'Docente Rescindido' }}</span>
+                  <span class="text-[10px] text-slate-400 font-semibold truncate">{{ rep.profesor_id?.email }}</span>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4 hidden md:table-cell text-sm font-bold text-slate-600">{{ rep.curso_id?.nombre || 'Curso Eliminado' }}</td>
-            <td class="px-6 py-4">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border"
+            <td class="px-5 py-4 hidden md:table-cell text-sm font-bold text-slate-600 truncate max-w-[150px]">{{ rep.curso_id?.nombre || 'Curso Eliminado' }}</td>
+            <td class="px-5 py-4 hidden sm:table-cell">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border whitespace-nowrap"
                 [ngClass]="duracionColor(rep.estadisticas?.palabras)">
                  {{ palabrasLabel(rep.estadisticas?.palabras) }}
               </span>
             </td>
-            <td class="px-6 py-4 text-right">
-              <button class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-colors px-3 py-1.5 rounded-xl border border-indigo-100 active:scale-95 flex items-center gap-1.5 ml-auto" 
+            <td class="px-5 py-4 text-right">
+              <button class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-colors px-3 py-1.5 rounded-xl border border-indigo-100 active:scale-95 flex items-center gap-1.5 ml-auto whitespace-nowrap" 
                 (click)="verTexto(rep)">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 Leer
@@ -183,7 +201,7 @@
     </div>
 
     <!-- Paginación -->
-    <div *ngIf="!isLoading && totalPaginas > 1" class="border-t border-slate-100 p-4 flex items-center justify-between bg-white mt-auto">
+    <div *ngIf="!isLoading && totalPaginas > 1 && activeTab === 'reportes'" class="border-t border-slate-100 p-4 flex items-center justify-between bg-white mt-auto">
       <span class="text-xs font-bold text-slate-500">
         Mostrando <span class="text-slate-800">{{ (pagina - 1) * porPagina + 1 }}</span> - 
         <span class="text-slate-800">{{ Math.min(pagina * porPagina, reportesFiltrados.length) }}</span> 
@@ -211,9 +229,37 @@
         </button>
       </div>
     </div>
+    </ng-container>
+
+    <!-- Dashboard Analítico -->
+    <ng-container *ngIf="activeTab === 'dashboard'">
+      <div class="p-8 w-full bg-slate-50/50 flex-1">
+        <div class="grid grid-cols-1 gap-8">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 w-full">
+            <h3 class="font-bold text-slate-800 mb-4 text-center">Evolución Histórica de Duración (min)</h3>
+            <div class="relative w-full h-64">
+              <canvas id="chartDuracionAdmin"></canvas>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+              <h3 class="font-bold text-slate-800 mb-4 text-center">Asistencia vs. Ausentismo (Global)</h3>
+              <div class="relative w-full h-64">
+                <canvas id="chartAsistenciaAdmin"></canvas>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col items-center">
+              <h3 class="font-bold text-slate-800 mb-4 text-center">Participación Activa Total</h3>
+              <div class="relative w-full max-w-[250px] h-64">
+                <canvas id="chartParticipacionAdmin"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
 
   </div>
-</div>
 
 <!-- ── MODAL: VER TRANSCRIPCIÓN ───────────────────────────────── -->
 <div *ngIf="selectedRep" class="fixed inset-0 z-50 flex items-center justify-center p-4">

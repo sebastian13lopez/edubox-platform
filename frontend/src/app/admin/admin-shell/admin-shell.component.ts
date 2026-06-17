@@ -1,3 +1,4 @@
+import { environment } from '@env/environment';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -16,7 +17,7 @@ export class AdminShellComponent implements OnInit {
   constructor(private router: Router, private http: HttpClient) {}
 
   ngOnInit() {
-    this.http.get<any[]>('http://localhost:3000/api/cursos').subscribe({
+    this.http.get<any[]>(environment.apiUrl + '/cursos').subscribe({
       next: (data: any[]) => this.cursosCount = data.length,
       error: (err: any) => this.cursosCount = 0
     });

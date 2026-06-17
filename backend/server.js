@@ -7,6 +7,7 @@ require('dotenv').config();
 const http = require('http'); 
 const { Server } = require('socket.io'); 
 const Message = require('./models/Message'); // Requerimos el modelo para guardar chats
+const Course = require('./models/Course'); // Para notificaciones basadas en inscripciones
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/historial', require('./routes/historial')); // Guardado de la tran
 app.use('/api/analitica', require('./routes/analitica')); // Learning Analytics y Gamificación
 app.use('/api/agregaciones', require('./routes/agregaciones')); // 8 Etapas del Aggregation Pipeline (Parcial 2)
 app.use('/api/operadores', require('./routes/operadores'));     // Operadores de comparación y lógicos (Parcial 2)
+app.use('/api/pqrs', require('./routes/pqrs'));                 // PQRS — Peticiones, Quejas, Reclamos y Sugerencias
 
 // ==========================================
 // 2. CONEXIÓN A MONGODB (La Despensa)
@@ -70,6 +72,54 @@ const confusionPorClase = new Map();
 
 io.on('connection', (socket) => {
   console.log('🔌 Nuevo cliente conectado (Túnel TCP Abierto):', socket.id);
+
+  // --- EVENTO: Identificación Global para Notificaciones ---
+  socket.on('identificarse', (userId) => {
+    if (userId) {
+      socket.join(`user_${userId}`);
+      console.log(`🔔 Socket ${socket.id} unido a sala de notificaciones user_${userId}`);
+    }
+  });
+
+  // --- EVENTO: Notificar Inicio de Clase ---
+  socket.on('clase-iniciada', async ({ cursoId, nombreCurso, profesorNombre }) => {
+    try {
+      const curso = await Course.findById(cursoId);
+      if (curso && curso.estudiantes) {
+        curso.estudiantes.forEach(estudianteId => {
+          io.to(`user_${estudianteId}`).emit('nueva-notificacion', {
+            titulo: '¡Clase Iniciada!',
+            mensaje: `El profesor ${profesorNombre} ha iniciado la clase en vivo de ${nombreCurso}.`,
+            tipo: 'info',
+            fecha: new Date(),
+            enlace: `/estudiante/aula-en-vivo`
+          });
+        });
+      }
+    } catch (err) {
+      console.error('Error enviando notificaciones de clase iniciada:', err);
+    }
+  });
+
+  // --- EVENTO: Notificar Material Agregado ---
+  socket.on('material-agregado', async ({ cursoId, nombreCurso, tituloMaterial, profesorNombre }) => {
+    try {
+      const curso = await Course.findById(cursoId);
+      if (curso && curso.estudiantes) {
+        curso.estudiantes.forEach(estudianteId => {
+          io.to(`user_${estudianteId}`).emit('nueva-notificacion', {
+            titulo: 'Nuevo Material',
+            mensaje: `El profesor ${profesorNombre} subió "${tituloMaterial}" en ${nombreCurso}.`,
+            tipo: 'success',
+            fecha: new Date(),
+            enlace: `/estudiante/inicio`
+          });
+        });
+      }
+    } catch (err) {
+      console.error('Error enviando notificación de material:', err);
+    }
+  });
 
   // --- EVENTO: Unirse a la Clase / Aula ---
   socket.on('unirse-clase', ({ cursoId, usuario }) => {
