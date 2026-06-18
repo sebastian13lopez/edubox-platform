@@ -12,7 +12,22 @@ export class ChatService {
 
   constructor() {
     // Inicializar conexión con el Web Socket de Node.js
-    this.socket = io(this.serverUrl);
+    // transports: intentar WebSocket primero, fallback a polling (necesario en Render)
+    this.socket = io(this.serverUrl, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000
+    });
+
+    this.socket.on('connect', () => {
+      console.log('🔌 Socket.IO conectado:', this.socket.id);
+    });
+    this.socket.on('connect_error', (err: any) => {
+      console.warn('⚠️ Socket.IO error de conexión:', err.message);
+    });
   }
 
   // === EMITIR EVENTOS HACIA EL SERVIDOR ===
