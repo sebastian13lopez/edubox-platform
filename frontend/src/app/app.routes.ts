@@ -1,11 +1,15 @@
 import { Routes } from '@angular/router';
 import { Login } from './auth/login/login';
 import { Register } from './auth/register/register';
+import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
-  { path: 'login',    component: Login },
-  { path: 'register', component: Register },
+  { path: 'login',            component: Login },
+  { path: 'register',         component: Register },
+  { path: 'forgot-password',  component: ForgotPasswordComponent },
+  { path: 'reset-password',   component: ResetPasswordComponent },
   // ── Administrador (lazy-loaded shell + child routes) ───────────────
   {
     path: 'admin',

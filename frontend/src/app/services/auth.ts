@@ -22,6 +22,16 @@ export class AuthService {
     return this.http.post(`${this.API_URL}/register`, usuario);
   }
 
+  // Solicitar correo de recuperación de contraseña
+  olvidePassword(correo: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/forgot-password`, { correo });
+  }
+
+  // Restablecer la contraseña con el token del correo
+  restablecerPassword(token: string, nuevaPassword: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/reset-password`, { token, nuevaPassword });
+  }
+
   // Guardar datos en el navegador del usuario
   guardarToken(token: string, rol: string, nombre: string = 'Usuario', correo: string = '', id: string = '', estado: string = '') {
     localStorage.setItem('auth_token', token);
