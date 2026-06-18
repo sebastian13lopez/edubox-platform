@@ -19,7 +19,8 @@ const io = new Server(server, {
   cors: {
     origin: [
       'http://localhost:4200',
-      'https://eduvox-neon.vercel.app'
+      'https://eduvox-neon.vercel.app',
+      'https://eduvox-l75kddp9y-jslopezr-ufpsoeducos-projects.vercel.app'
     ],
     methods: ['GET', 'POST']
   },
