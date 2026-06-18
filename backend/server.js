@@ -14,12 +14,17 @@ const app = express();
 // --- Envolver Express en un Servidor HTTP nativo ---
 const server = http.createServer(app);
 
-// --- Configurar Socket.IO con CORS para Angular ---
+// --- Configurar Socket.IO con CORS para Angular (local + producción) ---
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:4200', 
+    origin: [
+      'http://localhost:4200',
+      'https://eduvox-neon.vercel.app'
+    ],
     methods: ['GET', 'POST']
-  }
+  },
+  // Permitir polling como fallback si WebSocket falla (necesario en Render)
+  transports: ['websocket', 'polling']
 });
 
 // Middlewares
